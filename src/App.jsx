@@ -8,6 +8,7 @@ const P = ["#E4677E","#F4A77E","#F7CE76","#7EC8A6","#6BAFCF","#A47ED4","#E88B9C"
 const FUNC = "/.netlify/functions/data";
 const BLOB = "https://jsonblob.com/api/jsonBlob/019d3aec-1fd0-7391-86f3-9e085eba2130";
 const PROXY = "https://corsproxy.io/?";
+const INTEL_FUNC = "/.netlify/functions/intel";
 
 const UK = {
   "London":["Central London","East London","West London","North London","South London","Zone 3–4","Zone 5–6"],
@@ -408,6 +409,9 @@ function DashView({data,loading,reload,onClear,onBack}){
   const [deletePin,setDeletePin]=useState("");
   const [deletePinErr,setDeletePinErr]=useState(false);
   const [expandedWidget,setExpandedWidget]=useState(null);
+  const [intel,setIntel]=useState(null);
+  const [intelLoading,setIntelLoading]=useState(false);
+  const [intelScanRegion,setIntelScanRegion]=useState("");
   const [investigationPanel,setInvestigationPanel]=useState(null);
   const [aiResult,setAiResult]=useState({});
   const [aiInvLoading,setAiInvLoading]=useState(false);
@@ -463,6 +467,27 @@ function DashView({data,loading,reload,onClear,onBack}){
   };
 
   useEffect(()=>{if(selRegion)loadAI(selRegion);},[selRegion]);
+
+  // Load stored intel
+  const loadIntel=async()=>{
+    try{const r=await fetch(INTEL_FUNC);if(r.ok){const d=await r.json();setIntel(d);}}catch(e){console.error("Intel load:",e);}
+  };
+  useEffect(()=>{loadIntel();},[]);
+
+  // Run intelligence scan
+  const runScan=async(region)=>{
+    setIntelLoading(true);
+    const freeTexts=txts.map(t=>t.text);
+    const probs=Object.keys(pC);
+    try{
+      const r=await fetch(INTEL_FUNC,{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({region:region||null,problems:probs,freeTexts})});
+      const d=await r.json();
+      console.log("Scan result:",d);
+      await loadIntel();
+    }catch(e){console.error("Scan error:",e);}
+    setIntelLoading(false);
+  };
 
   const regionForProblem=selProblem?Object.entries(pL).filter(([_,probs])=>probs[selProblem]).map(([loc])=>loc):[];
 
@@ -769,6 +794,90 @@ function DashView({data,loading,reload,onClear,onBack}){
               ))}
             </div>
           </BX>}
+
+          {/* 🤖 INTELLIGENCE AGENT */}
+          <BX t="🤖 Intelligence Agent — Social & News Scanner" s={2}>
+            <p style={{fontSize:12,color:"rgba(0,0,0,.4)",marginBottom:12}}>
+              Scans Reddit (r/HousingUK, r/LegalAdviceUK, regional subs), Google News, and Companies House based on problems identified in survey responses.</p>
+            <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:14}}>
+              <select value={intelScanRegion} onChange={e=>setIntelScanRegion(e.target.value)}
+                style={{padding:"8px 14px",borderRadius:100,border:"1.5px solid rgba(0,0,0,.08)",fontFamily:"'Nunito',sans-serif",fontSize:13,background:"#fff"}}>
+                <option value="">All Regions</option>
+                {Object.keys(rC).map(r=><option key={r} value={r}>{r}</option>)}
+              </select>
+              <button className="bt bc" onClick={()=>runScan(intelScanRegion)} disabled={intelLoading||n===0}
+                style={{fontSize:12,padding:"8px 20px"}}>
+                {intelLoading?"⏳ Scanning...":"🔍 Run Intelligence Scan"}
+              </button>
+              {intel?.lastRun&&<span style={{fontSize:11,color:"rgba(0,0,0,.3)",alignSelf:"center"}}>
+                Last scan: {new Date(intel.lastRun).toLocaleString()}</span>}
+            </div>
+
+            {intel?.scans?.length>0&&(()=>{
+              const latest=intel.scans[intel.scans.length-1];
+              return(<div>
+                {/* Reddit Posts */}
+                {latest.reddit?.length>0&&<div style={{marginBottom:16}}>
+                  <div style={{fontWeight:700,fontSize:13,marginBottom:8,color:"#FF4500"}}>
+                    📱 Reddit Posts ({latest.reddit.length})</div>
+                  <div style={{maxHeight:300,overflowY:"auto",display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                    {latest.reddit.map((p,i)=>(
+                      <div key={i} style={{padding:12,borderRadius:12,background:"rgba(255,69,0,.03)",border:"1px solid rgba(255,69,0,.08)",fontSize:12}}>
+                        <div style={{fontWeight:700,marginBottom:4}}>{p.title?.slice(0,120)}</div>
+                        {p.text&&<div style={{color:"rgba(0,0,0,.5)",marginBottom:6,lineHeight:1.5}}>{p.text.slice(0,200)}{p.text.length>200?"...":""}</div>}
+                        <div style={{display:"flex",gap:10,color:"rgba(0,0,0,.3)",fontSize:10}}>
+                          <span>r/{p.subreddit}</span>
+                          <span>⬆ {p.score}</span>
+                          <span>💬 {p.comments}</span>
+                          {p.problem&&<span className="tag" style={{background:"rgba(228,103,126,.1)",color:"#E4677E",padding:"1px 6px"}}>{p.problem}</span>}
+                        </div>
+                        <a href={p.url} target="_blank" rel="noreferrer" style={{fontSize:10,color:"#6BAFCF",marginTop:4,display:"inline-block"}}>Open →</a>
+                      </div>
+                    ))}
+                  </div>
+                </div>}
+
+                {/* News Articles */}
+                {latest.news?.length>0&&<div style={{marginBottom:16}}>
+                  <div style={{fontWeight:700,fontSize:13,marginBottom:8,color:"#6BAFCF"}}>
+                    📰 News Articles ({latest.news.length})</div>
+                  <div style={{maxHeight:250,overflowY:"auto",display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                    {latest.news.map((a,i)=>(
+                      <div key={i} style={{padding:12,borderRadius:12,background:"rgba(107,175,207,.03)",border:"1px solid rgba(107,175,207,.08)",fontSize:12}}>
+                        <div style={{fontWeight:700,marginBottom:4}}>{a.title?.slice(0,120)}</div>
+                        <div style={{color:"rgba(0,0,0,.3)",fontSize:10,marginBottom:4}}>{a.publisher} · {a.date?new Date(a.date).toLocaleDateString():""}</div>
+                        {a.problem&&<span className="tag" style={{background:"rgba(228,103,126,.1)",color:"#E4677E",padding:"1px 6px",fontSize:9}}>{a.problem}</span>}
+                        <a href={a.url} target="_blank" rel="noreferrer" style={{fontSize:10,color:"#6BAFCF",display:"block",marginTop:4}}>Read article →</a>
+                      </div>
+                    ))}
+                  </div>
+                </div>}
+
+                {/* Entities & Companies */}
+                {(latest.entities?.length>0||latest.companies?.length>0)&&<div>
+                  <div style={{fontWeight:700,fontSize:13,marginBottom:8,color:"#A47ED4"}}>
+                    🏢 Entities & Companies House Matches</div>
+                  {latest.entities?.length>0&&<div style={{marginBottom:8}}>
+                    <span style={{fontSize:11,color:"rgba(0,0,0,.4)"}}>Extracted from responses: </span>
+                    {latest.entities.map((e,i)=><span key={i} className="tag" style={{background:"rgba(164,126,212,.1)",color:"#A47ED4",marginRight:4}}>{e}</span>)}
+                  </div>}
+                  {latest.companies?.length>0&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                    {latest.companies.map((c,i)=>(
+                      <div key={i} style={{padding:10,borderRadius:10,background:"rgba(164,126,212,.03)",border:"1px solid rgba(164,126,212,.08)",fontSize:11}}>
+                        <div style={{fontWeight:700}}>{c.name}</div>
+                        <div style={{color:"rgba(0,0,0,.4)"}}>#{c.number} · {c.status} · {c.type}</div>
+                        <div style={{color:"rgba(0,0,0,.3)",fontSize:10}}>{c.address}</div>
+                        <div style={{display:"flex",justifyContent:"space-between",marginTop:4}}>
+                          <span style={{fontSize:10}}>Matched: "{c.matchedEntity}"</span>
+                          <a href={c.url} target="_blank" rel="noreferrer" style={{fontSize:10,color:"#6BAFCF"}}>View →</a>
+                        </div>
+                      </div>
+                    ))}
+                  </div>}
+                </div>}
+              </div>);
+            })()}
+          </BX>
 
           {/* NOTE-TAKING PAD */}
           <BX t="📝 Research Notes" s={2}>
