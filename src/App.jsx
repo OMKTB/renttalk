@@ -3,6 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pi
 import * as XLSX from "xlsx";
 
 const ADMIN_PIN = "zubife6ezklm5nthmalu78gytklm3shan7nekomo";
+const DELETE_PIN = "zbekbermraaaaaaatbatshufut3alm9";
 const P = ["#E4677E","#F4A77E","#F7CE76","#7EC8A6","#6BAFCF","#A47ED4","#E88B9C","#82D4C4","#D4A06B","#B892D4","#E8A07E","#7EC8D4","#C97E7E","#7EAFC9","#C9B87E","#7EC9A4"];
 const FUNC = "/.netlify/functions/data";
 const BLOB = "https://jsonblob.com/api/jsonBlob/019d3aec-1fd0-7391-86f3-9e085eba2130";
@@ -316,6 +317,11 @@ function DashView({data,loading,reload,onClear,onBack}){
   const [selProblem,setSelProblem]=useState(null);
   const [aiCtx,setAiCtx]=useState({});
   const [aiLoading,setAiLoading]=useState(false);
+  const [notes,setNotes]=useState("");
+  const [showDeleteModal,setShowDeleteModal]=useState(false);
+  const [deletePin,setDeletePin]=useState("");
+  const [deletePinErr,setDeletePinErr]=useState(false);
+  const [expandedWidget,setExpandedWidget]=useState(null);
   const tt={background:"#fff",border:"1px solid rgba(0,0,0,.06)",borderRadius:10,fontSize:12,fontFamily:"'Nunito',sans-serif"};
 
   // Aggregate
@@ -379,7 +385,7 @@ function DashView({data,loading,reload,onClear,onBack}){
           <button className="bt bgh" onClick={onBack} style={{fontSize:11,padding:"7px 14px"}}>← Survey</button>
           <button className="bt bgh" onClick={reload} style={{fontSize:11,padding:"7px 14px"}}>↻ Refresh</button>
           {n>0&&<button className="bt bc" onClick={()=>exportToExcel(data,aggForExport)} style={{fontSize:11,padding:"7px 14px"}}>📥 Export Excel</button>}
-          <button className="bt bgh" onClick={onClear} style={{fontSize:11,padding:"7px 14px",color:"#E4677E"}}>Clear All</button>
+          
         </div>
       </div>
 
@@ -580,6 +586,98 @@ function DashView({data,loading,reload,onClear,onBack}){
               ))}
             </div>
           </BX>}
+
+          {/* NOTE-TAKING PAD */}
+          <BX t="📝 Research Notes" s={2}>
+            <p style={{fontSize:12,color:"rgba(0,0,0,.4)",marginBottom:10}}>Write observations, risks, and notable findings. Export as Word document.</p>
+            <textarea value={notes} onChange={e=>setNotes(e.target.value)}
+              style={{width:"100%",minHeight:200,padding:16,borderRadius:14,border:"1.5px solid rgba(0,0,0,.08)",background:"rgba(251,248,243,.6)",fontFamily:"'Lora',serif",fontSize:14,lineHeight:1.7,color:"#2C2C2C",resize:"vertical",outline:"none"}}
+              placeholder="Type your research notes here. Observations, risk factors, notable patterns, judgment calls..." />
+            <div style={{display:"flex",gap:8,marginTop:10}}>
+              <button className="bt bc" onClick={()=>{
+                const wb=XLSX.utils.book_new();
+                const ws=XLSX.utils.aoa_to_sheet([["RentTalk Research Notes"],[""],[notes],[""],["Exported: "+new Date().toISOString()]]);
+                XLSX.utils.book_append_sheet(wb,ws,"Notes");
+                XLSX.writeFile(wb,"RentTalk_Notes_"+new Date().toISOString().split("T")[0]+".xlsx");
+              }} style={{fontSize:11,padding:"8px 16px"}}>📥 Export Notes</button>
+              <span style={{fontSize:11,color:"rgba(0,0,0,.3)",alignSelf:"center"}}>{notes.length} characters</span>
+            </div>
+          </BX>
+
+          {/* UK HOUSING BENCHMARKS */}
+          <BX t="📏 UK Housing Benchmarks Comparison" s={2}>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:10}}>
+              <div style={{padding:14,borderRadius:12,background:"rgba(228,103,126,.04)",border:"1px solid rgba(228,103,126,.08)"}}>
+                <div style={{fontSize:10,fontWeight:700,color:"#E4677E",textTransform:"uppercase",marginBottom:6}}>Affordability Threshold</div>
+                <div style={{fontSize:20,fontFamily:"'Lora',serif",fontWeight:700}}>30%</div>
+                <div style={{fontSize:11,color:"rgba(0,0,0,.4)"}}>Max recommended income-to-rent ratio (Shelter UK)</div>
+                <div style={{fontSize:12,fontWeight:700,color:p4>30?"#E4677E":"#7EC8A6",marginTop:6}}>{p4>30?"⚠️ "+p4+"% of respondents EXCEED this":"✅ Within threshold"}</div>
+              </div>
+              <div style={{padding:14,borderRadius:12,background:"rgba(126,200,166,.04)",border:"1px solid rgba(126,200,166,.08)"}}>
+                <div style={{fontSize:10,fontWeight:700,color:"#7EC8A6",textTransform:"uppercase",marginBottom:6}}>Avg UK Rent (2025)</div>
+                <div style={{fontSize:20,fontFamily:"'Lora',serif",fontWeight:700}}>£1,332/mo</div>
+                <div style={{fontSize:11,color:"rgba(0,0,0,.4)"}}>ONS Private Rental Index, England</div>
+                <div style={{fontSize:12,fontWeight:700,marginTop:6}}>Survey median: {Object.keys(reC).length>0?Object.entries(reC).sort((a,b)=>b[1]-a[1])[0][0]:"N/A"}</div>
+              </div>
+              <div style={{padding:14,borderRadius:12,background:"rgba(107,175,207,.04)",border:"1px solid rgba(107,175,207,.08)"}}>
+                <div style={{fontSize:10,fontWeight:700,color:"#6BAFCF",textTransform:"uppercase",marginBottom:6}}>Section 21 Status</div>
+                <div style={{fontSize:20,fontFamily:"'Lora',serif",fontWeight:700}}>Pending Abolition</div>
+                <div style={{fontSize:11,color:"rgba(0,0,0,.4)"}}>Renters' Rights Bill 2025 — Royal Assent pending</div>
+                <div style={{fontSize:12,fontWeight:700,color:pC["Tenure insecurity"]?"#E4677E":"#7EC8A6",marginTop:6}}>{pC["Tenure insecurity"]?pC["Tenure insecurity"]+" respondents cite tenure insecurity":"Not reported"}</div>
+              </div>
+              <div style={{padding:14,borderRadius:12,background:"rgba(164,126,212,.04)",border:"1px solid rgba(164,126,212,.08)"}}>
+                <div style={{fontSize:10,fontWeight:700,color:"#A47ED4",textTransform:"uppercase",marginBottom:6}}>Median Age of Renters</div>
+                <div style={{fontSize:20,fontFamily:"'Lora',serif",fontWeight:700}}>26 yrs</div>
+                <div style={{fontSize:11,color:"rgba(0,0,0,.4)"}}>English Housing Survey 2023-24</div>
+                <div style={{fontSize:12,fontWeight:700,marginTop:6}}>Survey avg: {agD.length>0?(agD.reduce((s,a)=>s+Number(a.name)*a.value,0)/n).toFixed(1):"N/A"} yrs</div>
+              </div>
+            </div>
+          </BX>
+
+          {/* SEVERITY SCORING */}
+          <BX t="🔴 Problem Severity Matrix" s={2}>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:8}}>
+              {pD.map((p,i)=>{
+                const pct=((p.value/n)*100);
+                const severity=pct>50?"CRITICAL":pct>30?"HIGH":pct>15?"MEDIUM":"LOW";
+                const sCol=severity==="CRITICAL"?"#E4677E":severity==="HIGH"?"#F4A77E":severity==="MEDIUM"?"#F7CE76":"#7EC8A6";
+                return(<div key={p.name} style={{padding:12,borderRadius:10,background:`${sCol}08`,border:`1px solid ${sCol}20`}}>
+                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                    <span style={{fontSize:12,fontWeight:700}}>{p.name}</span>
+                    <span style={{fontSize:10,fontWeight:800,color:sCol,padding:"2px 8px",borderRadius:100,background:`${sCol}15`}}>{severity}</span>
+                  </div>
+                  <div style={{fontSize:11,color:"rgba(0,0,0,.4)"}}>{p.value} reports ({pct.toFixed(0)}%) · {PROBLEM_CATEGORIES[p.name]||"General"}</div>
+                  <div style={{height:4,borderRadius:2,background:"rgba(0,0,0,.06)",marginTop:6}}>
+                    <div style={{height:"100%",borderRadius:2,background:sCol,width:`${Math.min(pct*2,100)}%`}}/>
+                  </div>
+                </div>);
+              })}
+            </div>
+          </BX>
+
+          {/* PROTECTED DELETE */}
+          <BX t="⚠️ Data Management" s={2}>
+            <p style={{fontSize:12,color:"rgba(0,0,0,.4)",marginBottom:12}}>Clearing data is permanent. An export will be forced before deletion.</p>
+            {!showDeleteModal?
+              <button className="bt bgh" onClick={()=>setShowDeleteModal(true)} style={{fontSize:12,padding:"8px 16px",color:"#E4677E"}}>
+                🗑️ Request Data Clear</button>
+            :<div style={{padding:20,borderRadius:14,background:"rgba(228,103,126,.04)",border:"1px solid rgba(228,103,126,.15)"}}>
+              <div style={{fontWeight:700,fontSize:14,color:"#E4677E",marginBottom:10}}>⚠️ Confirm Data Deletion</div>
+              <p style={{fontSize:12,marginBottom:12}}>Step 1: Data will be exported automatically. Step 2: Enter deletion password.</p>
+              <input className="inp" type="password" value={deletePin} onChange={e=>{setDeletePin(e.target.value);setDeletePinErr(false);}}
+                placeholder="Enter deletion password" style={{marginBottom:10}}/>
+              {deletePinErr&&<p style={{color:"#E4677E",fontSize:12,marginBottom:8}}>Incorrect deletion password.</p>}
+              <div style={{display:"flex",gap:8}}>
+                <button className="bt bgh" onClick={()=>{setShowDeleteModal(false);setDeletePin("");}} style={{fontSize:12,padding:"8px 16px"}}>Cancel</button>
+                <button className="bt bp" onClick={()=>{
+                  if(deletePin===DELETE_PIN){
+                    exportToExcel(data,aggForExport);
+                    setTimeout(()=>{onClear();setShowDeleteModal(false);setDeletePin("");},500);
+                  }else{setDeletePinErr(true);setDeletePin("");}
+                }} style={{fontSize:12,padding:"8px 16px",background:"#E4677E"}}>Export & Delete All Data</button>
+              </div>
+            </div>}
+          </BX>
 
           {/* LEGAL LANDSCAPE */}
           <BX t="⚖️ Legal Landscape Overview" s={2}>
