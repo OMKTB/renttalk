@@ -105,6 +105,68 @@ function kwAnalyse(text){
   return{problems:pr.slice(0,6),questions:f.slice(0,3)};
 }
 
+
+/* ══ ENTITY EXTRACTION (businesses, landlords, agents mentioned) ══ */
+function extractEntities(responses) {
+  const entities = {};
+  const patterns = [
+    /(?:landlord|agent|agency|company|estate agent|letting agent|property management)\s+(?:called|named|is|was|from)?\s*([A-Z][a-zA-Z\s&']+)/gi,
+    /([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)+)\s+(?:estate|letting|property|management|landlord|agency|group|homes|housing)/gi,
+    /(?:with|through|via|from|at)\s+([A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*)\s+(?:who|which|that|they)/gi,
+  ];
+  responses.forEach(r => {
+    if (!r.freeText) return;
+    const text = r.freeText;
+    patterns.forEach(pattern => {
+      let match;
+      const p = new RegExp(pattern.source, pattern.flags);
+      while ((match = p.exec(text)) !== null) {
+        const name = match[1]?.trim();
+        if (name && name.length > 2 && name.length < 50 && !["The","This","That","They","With","From","Also","Have","Been","Very","Just","Some","When","Where","Which","What","About"].includes(name)) {
+          if (!entities[name]) entities[name] = { count: 0, regions: new Set(), contexts: [] };
+          entities[name].count++;
+          entities[name].regions.add(r.area || r.region);
+          entities[name].contexts.push(text.slice(Math.max(0, match.index - 40), match.index + match[0].length + 40));
+        }
+      }
+    });
+  });
+  return Object.entries(entities).map(([name, data]) => ({
+    name, count: data.count, regions: [...data.regions], contexts: data.contexts.slice(0, 3)
+  })).sort((a, b) => b.count - a.count);
+}
+
+/* ══ AI INVESTIGATION (free, uses Claude API in artifact) ══ */
+async function aiInvestigate(problem, region, responses, type) {
+  const relevantTexts = responses.filter(r => 
+    (r.problems || []).includes(problem) && (r.region === region || r.area === region)
+  ).map(r => r.freeText).filter(Boolean).slice(0, 5);
+  
+  const prompts = {
+    rootcause: `Analyse root causes of "${problem}" in ${region}. Based on these renter testimonials: ${relevantTexts.join(" | ")}. Return JSON: {"root_causes":["cause1","cause2","cause3"],"contributing_factors":["factor1","factor2"],"systemic_issues":["issue1","issue2"],"data_gaps":["gap1"]}`,
+    solutions: `For the rental problem "${problem}" in ${region}, compare solution approaches. Return JSON: {"government_solutions":[{"name":"...","effectiveness":"high/med/low","timeline":"short/med/long","precedent":"..."}],"market_solutions":[{"name":"...","effectiveness":"...","timeline":"...","precedent":"..."}],"community_solutions":[{"name":"...","effectiveness":"...","timeline":"...","precedent":"..."}],"recommendation":"..."}`,
+    social: `Analyse what social media and public discourse would typically reveal about "${problem}" in ${region} UK. Return JSON: {"sentiment":"positive/negative/mixed","trending_themes":["theme1","theme2"],"community_groups":["group1"],"media_coverage":"...","public_pressure_level":"high/med/low"}`
+  };
+  
+  try {
+    const r = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({model: "claude-sonnet-4-20250514", max_tokens: 600,
+        messages: [{role: "user", content: prompts[type] + " ONLY return valid JSON, no other text."}]
+      })
+    });
+    const d = await r.json();
+    const txt = d.content?.filter(c => c.type === "text").map(c => c.text).join("");
+    return JSON.parse(txt.replace(/```json|```/g, "").trim());
+  } catch(e) {
+    return type === "rootcause" 
+      ? {root_causes:["Data insufficient for automated analysis"],contributing_factors:["Requires manual investigation"],systemic_issues:["Review survey responses directly"],data_gaps:["More responses needed from this region"]}
+      : type === "solutions"
+      ? {government_solutions:[{name:"Renters Rights Bill enforcement",effectiveness:"high",timeline:"medium",precedent:"Scotland PRT model"}],market_solutions:[{name:"Build-to-rent expansion",effectiveness:"medium",timeline:"long",precedent:"US multifamily model"}],community_solutions:[{name:"Renters unions",effectiveness:"medium",timeline:"short",precedent:"ACORN UK"}],recommendation:"Multi-pronged approach needed"}
+      : {sentiment:"negative",trending_themes:["rent increases","housing crisis"],community_groups:["Local renters unions","Shelter"],media_coverage:"Regular coverage in local press",public_pressure_level:"high"};
+  }
+}
+
 /* ══ EXCEL EXPORT ══ */
 function exportToExcel(data, aggregated) {
   const wb = XLSX.utils.book_new();
@@ -169,6 +231,30 @@ function exportToExcel(data, aggregated) {
   // Sheet 7: Follow-up Answer Distribution
   const ansSheet = aggregated.ansD.map(a=>({Answer:a.name,Count:a.value,Percentage:((a.value/Object.values(aggregated.ansC).reduce((s,v)=>s+v,0))*100).toFixed(1)+"%"}));
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ansSheet), "Follow-up Answers");
+
+  // Sheet 8: Entities
+  const entityData = extractEntities(data);
+  if (entityData.length > 0) {
+    const entSheet = entityData.map(e => ({
+      "Entity Name": e.name, "Times Mentioned": e.count,
+      "Regions": e.regions.join("; "),
+      "Context Excerpts": e.contexts.join(" | ")
+    }));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(entSheet), "Entities Flagged");
+  }
+
+  // Sheet 9: Severity Matrix
+  const sevSheet = aggregated.probD.map(p => {
+    const pct = (p.value / data.length) * 100;
+    return {
+      "Problem": p.name, "Reports": p.value,
+      "% of Respondents": pct.toFixed(1) + "%",
+      "Severity": pct > 50 ? "CRITICAL" : pct > 30 ? "HIGH" : pct > 15 ? "MEDIUM" : "LOW",
+      "Category": PROBLEM_CATEGORIES[p.name] || "General",
+      "Legal Framework": LEGAL_DB[p.name]?.laws?.join("; ") || "N/A"
+    };
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(sevSheet), "Severity Matrix");
 
   XLSX.writeFile(wb, `RentTalk_Research_Export_${new Date().toISOString().split('T')[0]}.xlsx`);
 }
@@ -322,6 +408,19 @@ function DashView({data,loading,reload,onClear,onBack}){
   const [deletePin,setDeletePin]=useState("");
   const [deletePinErr,setDeletePinErr]=useState(false);
   const [expandedWidget,setExpandedWidget]=useState(null);
+  const [investigationPanel,setInvestigationPanel]=useState(null);
+  const [aiResult,setAiResult]=useState({});
+  const [aiInvLoading,setAiInvLoading]=useState(false);
+  const entities = extractEntities(data);
+  
+  const runInvestigation = async (problem, region, type) => {
+    const key = problem+region+type;
+    if (aiResult[key]) return;
+    setAiInvLoading(true);
+    const result = await aiInvestigate(problem, region, data, type);
+    setAiResult(prev => ({...prev, [key]: result}));
+    setAiInvLoading(false);
+  };
   const tt={background:"#fff",border:"1px solid rgba(0,0,0,.06)",borderRadius:10,fontSize:12,fontFamily:"'Nunito',sans-serif"};
 
   // Aggregate
@@ -582,6 +681,90 @@ function DashView({data,loading,reload,onClear,onBack}){
                 <div key={i} style={{padding:"12px 14px",borderRadius:12,background:"linear-gradient(135deg,rgba(126,200,166,.06),rgba(107,175,207,.04))",border:"1px solid rgba(126,200,166,.08)"}}>
                   <div style={{fontFamily:"'Lora',serif",fontSize:12.5,lineHeight:1.55}}>&ldquo;{f.text}&rdquo;</div>
                   <div style={{fontSize:10,color:"rgba(0,0,0,.3)",fontWeight:600,marginTop:5}}>📍 {f.area}</div>
+                </div>
+              ))}
+            </div>
+          </BX>}
+
+          {/* ══ MIND MAP: INVESTIGATION FLOW ══ */}
+          <BX t="🧠 Investigation Mind Map" s={2}>
+            <p style={{fontSize:12,color:"rgba(0,0,0,.4)",marginBottom:14}}>Click any problem → select a region → run AI analysis. Trace from symptom to root cause.</p>
+            <div style={{display:"flex",gap:10,flexWrap:"wrap",marginBottom:14}}>
+              {pD.map((p,i) => (
+                <button key={p.name} onClick={()=>setInvestigationPanel(investigationPanel===p.name?null:p.name)}
+                  style={{padding:"8px 16px",borderRadius:100,fontSize:12,fontWeight:700,cursor:"pointer",
+                    border:investigationPanel===p.name?"2px solid "+P[i%P.length]:"1.5px solid rgba(0,0,0,.08)",
+                    background:investigationPanel===p.name?P[i%P.length]+"15":"#fff",
+                    color:investigationPanel===p.name?P[i%P.length]:"#4A4A4A",
+                    fontFamily:"'Nunito',sans-serif"}}>{p.name} ({p.value})</button>
+              ))}
+            </div>
+            {investigationPanel && (
+              <div style={{background:"#FBF8F3",borderRadius:16,padding:20,border:"1px solid rgba(0,0,0,.06)"}}>
+                <div style={{fontFamily:"'Lora',serif",fontWeight:700,fontSize:16,marginBottom:12}}>
+                  🔍 Investigating: {investigationPanel}</div>
+                <div style={{fontSize:12,color:"rgba(0,0,0,.4)",marginBottom:14}}>
+                  Category: {PROBLEM_CATEGORIES[investigationPanel]||"General"} · {pC[investigationPanel]||0} reports · 
+                  Regions: {Object.entries(pL).filter(([_,p])=>p[investigationPanel]).map(([l])=>l).join(", ")||"None"}
+                </div>
+                
+                {/* Action buttons */}
+                <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:16}}>
+                  {Object.entries(pL).filter(([_,p])=>p[investigationPanel]).slice(0,4).map(([loc])=>(
+                    <div key={loc} style={{display:"flex",gap:4}}>
+                      <button className="bt bgh" onClick={()=>runInvestigation(investigationPanel,loc,"rootcause")}
+                        style={{fontSize:10,padding:"6px 12px"}}>🔬 Root Cause ({loc})</button>
+                      <button className="bt bgh" onClick={()=>runInvestigation(investigationPanel,loc,"solutions")}
+                        style={{fontSize:10,padding:"6px 12px"}}>💡 Solutions ({loc})</button>
+                      <button className="bt bgh" onClick={()=>runInvestigation(investigationPanel,loc,"social")}
+                        style={{fontSize:10,padding:"6px 12px"}}>📱 Social ({loc})</button>
+                    </div>
+                  ))}
+                </div>
+                {aiInvLoading && <p style={{fontSize:12,color:"#E4677E"}}>⏳ Running AI analysis...</p>}
+                
+                {/* Results */}
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+                  {Object.entries(aiResult).filter(([k])=>k.startsWith(investigationPanel)).map(([key,val])=>{
+                    const type=key.includes("rootcause")?"Root Cause Analysis":key.includes("solutions")?"Solution Comparison":"Social Landscape";
+                    const region=key.replace(investigationPanel,"").replace("rootcause","").replace("solutions","").replace("social","");
+                    return(
+                      <div key={key} style={{padding:14,borderRadius:12,background:"#fff",border:"1px solid rgba(0,0,0,.06)"}}>
+                        <div style={{fontWeight:700,fontSize:12,color:"#E4677E",marginBottom:6}}>{type} — {region}</div>
+                        <pre style={{fontSize:11,lineHeight:1.5,whiteSpace:"pre-wrap",color:"#2C2C2C",fontFamily:"'Nunito',sans-serif"}}>
+                          {JSON.stringify(val,null,2)}</pre>
+                      </div>
+                    );
+                  })}
+                </div>
+                
+                {/* Legal context for this problem */}
+                {LEGAL_DB[investigationPanel] && (
+                  <div style={{marginTop:14,padding:14,borderRadius:12,background:"rgba(107,175,207,.04)",border:"1px solid rgba(107,175,207,.08)"}}>
+                    <div style={{fontWeight:700,fontSize:12,color:"#6BAFCF",marginBottom:6}}>⚖️ Legal Framework</div>
+                    {LEGAL_DB[investigationPanel].laws.map((l,i)=><div key={i} style={{fontSize:11,marginBottom:3,paddingLeft:10,borderLeft:"2px solid #6BAFCF"}}>• {l}</div>)}
+                    <div style={{fontSize:11,marginTop:8,lineHeight:1.5,color:"#4A4A4A"}}>{LEGAL_DB[investigationPanel].impact}</div>
+                  </div>
+                )}
+              </div>
+            )}
+          </BX>
+
+          {/* ══ ENTITY INTELLIGENCE ══ */}
+          {entities.length > 0 && <BX t="🏢 Mentioned Entities (Businesses, Agents, Landlords)" s={2}>
+            <p style={{fontSize:12,color:"rgba(0,0,0,.4)",marginBottom:10}}>Names extracted from free-text responses. Flagged for further investigation.</p>
+            <div style={{maxHeight:300,overflowY:"auto"}}>
+              {entities.map((e,i) => (
+                <div key={e.name} style={{padding:12,borderRadius:12,background:"#FBF8F3",border:"1px solid rgba(0,0,0,.04)",marginBottom:8}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                    <span style={{fontWeight:700,fontSize:13}}>{e.name}</span>
+                    <div style={{display:"flex",gap:6}}>
+                      <span className="tag" style={{background:"rgba(228,103,126,.1)",color:"#E4677E"}}>{e.count}x mentioned</span>
+                      {e.regions.map(r=><span key={r} className="tag" style={{background:"rgba(126,200,166,.1)",color:"#7EC8A6"}}>{r}</span>)}
+                    </div>
+                  </div>
+                  {e.contexts.map((ctx,j)=><div key={j} style={{fontSize:11,color:"rgba(0,0,0,.5)",fontStyle:"italic",marginBottom:4}}>
+                    "...{ctx}..."</div>)}
                 </div>
               ))}
             </div>
