@@ -398,8 +398,10 @@ function SurveyView({onAdmin}){
 /* ══════════════════════════════════════
    RESEARCH INTELLIGENCE DASHBOARD
    ══════════════════════════════════════ */
+
 function DashView({data,loading,reload,onClear,onBack}){
   const n=data.length;
+  const [tab,setTab]=useState("overview");
   const [selRegion,setSelRegion]=useState(null);
   const [selProblem,setSelProblem]=useState(null);
   const [aiCtx,setAiCtx]=useState({});
@@ -408,26 +410,15 @@ function DashView({data,loading,reload,onClear,onBack}){
   const [showDeleteModal,setShowDeleteModal]=useState(false);
   const [deletePin,setDeletePin]=useState("");
   const [deletePinErr,setDeletePinErr]=useState(false);
-  const [expandedWidget,setExpandedWidget]=useState(null);
   const [intel,setIntel]=useState(null);
   const [intelLoading,setIntelLoading]=useState(false);
   const [intelScanRegion,setIntelScanRegion]=useState("");
-  const [investigationPanel,setInvestigationPanel]=useState(null);
-  const [aiResult,setAiResult]=useState({});
-  const [aiInvLoading,setAiInvLoading]=useState(false);
-  const entities = extractEntities(data);
-  
-  const runInvestigation = async (problem, region, type) => {
-    const key = problem+region+type;
-    if (aiResult[key]) return;
-    setAiInvLoading(true);
-    const result = await aiInvestigate(problem, region, data, type);
-    setAiResult(prev => ({...prev, [key]: result}));
-    setAiInvLoading(false);
-  };
-  const tt={background:"#fff",border:"1px solid rgba(0,0,0,.06)",borderRadius:10,fontSize:12,fontFamily:"'Nunito',sans-serif"};
+  const DELETE_PIN="zbekbermraaaaaaatbatshufut3alm9";
 
-  // Aggregate
+  const tt={background:"#fff",border:"1px solid rgba(0,0,0,.06)",borderRadius:10,fontSize:12,fontFamily:"'Nunito',sans-serif"};
+  const INTEL_FUNC="/.netlify/functions/intel";
+
+  // === AGGREGATION ===
   const rC={},aC={},reC={},iC={},rcC={},sC={},pC={},anC={},pL={},agC={},catC={};
   let tR=0,o5=0,o4=0;const txts=[],fixes=[];
   data.forEach(r=>{
@@ -447,139 +438,159 @@ function DashView({data,loading,reload,onClear,onBack}){
     if(loc)(r.problems||[]).forEach(p=>{if(!pL[loc])pL[loc]={};pL[loc][p]=(pL[loc][p]||0)+1;});
     if(r.answers)Object.values(r.answers).forEach(a=>{anC[a]=(anC[a]||0)+1;});
   });
-
   const sr=o=>Object.entries(o).map(([name,value])=>({name,value})).sort((a,b)=>b.value-a.value);
   const pi=o=>Object.entries(o).map(([name,value])=>({name,value}));
   const pD=sr(pC),aD=sr(aC).slice(0,15),anD=sr(anC).slice(0,15),agD=sr(agC),catD=sr(catC);
   const avg=n?(tR/n).toFixed(1):"0";const topP=pD[0]?.name||"N/A";const topA=aD[0]?.name||"N/A";
   const p5=n?Math.round((o5/n)*100):0;const p4=n?Math.round((o4/n)*100):0;
-
   const aggForExport={probD:pD,probByLoc:pL,rentC:reC,incC:iC,ansD:anD,ansC:anC,probC:pC};
 
-  // Load AI context for selected region
+  // === AI & INTEL ===
   const loadAI=async(region)=>{
-    if(aiCtx[region])return;
-    setAiLoading(true);
+    if(aiCtx[region])return;setAiLoading(true);
     const probs=pL[region]?Object.keys(pL[region]):Object.keys(pC).slice(0,3);
     const ctx=await getAIContext(region,probs,data);
-    setAiCtx(prev=>({...prev,[region]:ctx}));
-    setAiLoading(false);
+    setAiCtx(prev=>({...prev,[region]:ctx}));setAiLoading(false);
   };
-
   useEffect(()=>{if(selRegion)loadAI(selRegion);},[selRegion]);
 
-  // Load stored intel
-  const loadIntel=async()=>{
-    try{const r=await fetch(INTEL_FUNC);if(r.ok){const d=await r.json();setIntel(d);}}catch(e){console.error("Intel load:",e);}
-  };
+  const loadIntel=async()=>{try{const r=await fetch(INTEL_FUNC);if(r.ok){const d=await r.json();setIntel(d);}}catch(e){}};
   useEffect(()=>{loadIntel();},[]);
-
-  // Run intelligence scan
   const runScan=async(region)=>{
     setIntelLoading(true);
-    const freeTexts=txts.map(t=>t.text);
-    const probs=Object.keys(pC);
-    try{
-      const r=await fetch(INTEL_FUNC,{method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({region:region||null,problems:probs,freeTexts})});
-      const d=await r.json();
-      console.log("Scan result:",d);
+    try{await fetch(INTEL_FUNC,{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({region:region||null,problems:Object.keys(pC),freeTexts:txts.map(t=>t.text)})});
       await loadIntel();
-    }catch(e){console.error("Scan error:",e);}
+    }catch(e){}
     setIntelLoading(false);
   };
-
   const regionForProblem=selProblem?Object.entries(pL).filter(([_,probs])=>probs[selProblem]).map(([loc])=>loc):[];
 
+  // === LOADING / EMPTY STATES ===
   if(loading)return(<div style={{textAlign:"center",padding:80,color:"rgba(0,0,0,.3)"}}>Loading from cloud…</div>);
 
+  // === RENDER ===
+  const tabs=[["overview","📊 Overview"],["regional","🗺️ Regional"],["intelligence","🤖 Intelligence"],["legal","⚖️ Legal"],["data","📋 Data"],["tools","🛠️ Tools"]];
   return(
     <div style={{padding:"0 20px 60px",maxWidth:1200,margin:"0 auto"}}>
       {/* HEADER */}
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",padding:"22px 0 16px",flexWrap:"wrap",gap:10}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",padding:"22px 0 12px",flexWrap:"wrap",gap:10}}>
         <div>
           <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
             <svg width="20" height="20" viewBox="0 0 28 28" fill="none"><rect x="4" y="12" width="20" height="14" rx="2" fill="#E4677E" opacity=".15"/><path d="M3 13L14 4L25 13" stroke="#E4677E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
             <span style={{fontFamily:"'Lora',serif",fontWeight:700,fontSize:16}}>Rent<span style={{color:"#E4677E"}}>Talk</span></span>
-            <span style={{fontSize:11,background:"#E4677E",color:"#fff",padding:"2px 8px",borderRadius:100,fontWeight:700}}>RESEARCH DASHBOARD</span>
+            <span style={{fontSize:11,background:"#E4677E",color:"#fff",padding:"2px 8px",borderRadius:100,fontWeight:700}}>RESEARCH</span>
           </div>
-          <p style={{color:"#4A4A4A",fontSize:12}}>{n} responses · Cloud database</p>
+          <p style={{color:"#4A4A4A",fontSize:12}}>{n} responses · Cloud DB</p>
         </div>
         <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
           <button className="bt bgh" onClick={onBack} style={{fontSize:11,padding:"7px 14px"}}>← Survey</button>
           <button className="bt bgh" onClick={reload} style={{fontSize:11,padding:"7px 14px"}}>↻ Refresh</button>
-          {n>0&&<button className="bt bc" onClick={()=>exportToExcel(data,aggForExport)} style={{fontSize:11,padding:"7px 14px"}}>📥 Export Excel</button>}
-          
+          {n>0&&<button className="bt bc" onClick={()=>exportToExcel(data,aggForExport)} style={{fontSize:11,padding:"7px 14px"}}>📥 Export</button>}
         </div>
       </div>
 
-      {n===0?(<div style={{textAlign:"center",padding:"60px 24px"}}><div style={{fontSize:48,opacity:.15,marginBottom:12}}>📊</div><h2 style={{fontFamily:"'Lora',serif",fontSize:22,fontWeight:700,marginBottom:6}}>No responses yet</h2><p style={{color:"#4A4A4A",fontSize:14}}>Responses from all users will appear here.</p></div>):(
+      {/* TAB BAR */}
+      <div style={{display:"flex",gap:4,background:"rgba(0,0,0,.04)",borderRadius:100,padding:4,marginBottom:16,overflowX:"auto"}}>
+        {tabs.map(([k,l])=>(
+          <button key={k} onClick={()=>setTab(k)} style={{padding:"9px 16px",fontSize:12,borderRadius:100,whiteSpace:"nowrap",border:"none",cursor:"pointer",fontFamily:"'Nunito',sans-serif",fontWeight:700,transition:"all .15s",background:tab===k?"#fff":"transparent",color:tab===k?"#2C2C2C":"rgba(0,0,0,.35)",boxShadow:tab===k?"0 1px 6px rgba(0,0,0,.06)":"none"}}>{l}</button>
+        ))}
+      </div>
+
+      {n===0?(<div style={{textAlign:"center",padding:"60px 24px"}}><div style={{fontSize:48,opacity:.15,marginBottom:12}}>📊</div><h2 style={{fontFamily:"'Lora',serif",fontSize:22,fontWeight:700,marginBottom:6}}>No responses yet</h2></div>):(
       <>
-        {/* KPIs */}
+        {/* KPIs - always visible */}
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(145px,1fr))",gap:10,marginBottom:16}}>
-          <KP l="Responses" v={n} c="#E4677E"/>
-          <KP l="Broken Rating" v={`${avg}/10`} c="#D4A06B"/>
-          <KP l="Top Problem" v={topP} c="#E4677E" sm/>
-          <KP l="Top Area" v={topA} c="#7EC8A6" sm/>
-          <KP l=">50% Income" v={`${p5}%`} c="#E4677E"/>
-          <KP l=">40% Income" v={`${p4}%`} c="#F4A77E"/>
-          <KP l="Regions Covered" v={Object.keys(rC).length} c="#6BAFCF"/>
-          <KP l="Unique Problems" v={Object.keys(pC).length} c="#A47ED4"/>
+          <KP l="Responses" v={n} c="#E4677E"/><KP l="Broken Rating" v={`${avg}/10`} c="#D4A06B"/>
+          <KP l="Top Problem" v={topP} c="#E4677E" sm/><KP l="Top Area" v={topA} c="#7EC8A6" sm/>
+          <KP l=">50% Income" v={`${p5}%`} c="#E4677E"/><KP l=">40% Income" v={`${p4}%`} c="#F4A77E"/>
+          <KP l="Regions" v={Object.keys(rC).length} c="#6BAFCF"/><KP l="Problems" v={Object.keys(pC).length} c="#A47ED4"/>
         </div>
 
-        {/* INSIGHT BANNER */}
-        <div style={{background:"linear-gradient(135deg,rgba(228,103,126,.08),rgba(126,200,166,.06))",borderRadius:16,padding:"16px 22px",marginBottom:16,border:"1px solid rgba(228,103,126,.1)"}}>
-          <div style={{fontFamily:"'Lora',serif",fontWeight:700,fontSize:14,marginBottom:4,color:"#E4677E"}}>📊 Research Summary</div>
-          <div style={{fontSize:13,lineHeight:1.7}}>
-            {n} respondents across {Object.keys(rC).length} UK regions. The dominant issue is <b>{topP}</b> ({pD[0]?.value||0} citations).
-            {p4>30&&` ${p4}% of respondents spend over 40% of income on rent, exceeding the 30% affordability threshold.`}
-            {` Most responses originate from ${topA}. Problem categories span ${Object.keys(catC).join(", ")}.`}
-          </div>
-        </div>
+        {/* ═══ OVERVIEW TAB ═══ */}
+        {tab==="overview"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+          {/* Severity Matrix */}
+          <BX t="🔴 Problem Severity Matrix" s={2}>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:8}}>
+              {pD.map((p,i)=>{const pct=((p.value/n)*100);const sev=pct>50?"CRITICAL":pct>30?"HIGH":pct>15?"MEDIUM":"LOW";const sc=sev==="CRITICAL"?"#E4677E":sev==="HIGH"?"#F4A77E":sev==="MEDIUM"?"#F7CE76":"#7EC8A6";
+              return(<div key={p.name} style={{padding:12,borderRadius:10,background:`${sc}08`,border:`1px solid ${sc}20`}}>
+                <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}><span style={{fontSize:12,fontWeight:700}}>{p.name}</span><span style={{fontSize:10,fontWeight:800,color:sc,padding:"2px 8px",borderRadius:100,background:`${sc}15`}}>{sev}</span></div>
+                <div style={{fontSize:11,color:"rgba(0,0,0,.4)"}}>{p.value} reports ({pct.toFixed(0)}%)</div>
+                <div style={{height:4,borderRadius:2,background:"rgba(0,0,0,.06)",marginTop:6}}><div style={{height:"100%",borderRadius:2,background:sc,width:`${Math.min(pct*2,100)}%`}}/></div>
+              </div>)})}
+            </div>
+          </BX>
 
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
-          {/* UK MAP */}
+          {/* Benchmarks */}
+          <BX t="📏 UK Housing Benchmarks" s={2}>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:10}}>
+              <div style={{padding:14,borderRadius:12,background:"rgba(228,103,126,.04)",border:"1px solid rgba(228,103,126,.08)"}}>
+                <div style={{fontSize:10,fontWeight:700,color:"#E4677E",textTransform:"uppercase",marginBottom:6}}>Affordability Threshold</div>
+                <div style={{fontSize:20,fontFamily:"'Lora',serif",fontWeight:700}}>30%</div>
+                <div style={{fontSize:11,color:"rgba(0,0,0,.4)"}}>Max income-to-rent (Shelter UK)</div>
+                <div style={{fontSize:12,fontWeight:700,color:p4>30?"#E4677E":"#7EC8A6",marginTop:6}}>{p4>30?"⚠️ "+p4+"% EXCEED":"✅ Within threshold"}</div>
+              </div>
+              <div style={{padding:14,borderRadius:12,background:"rgba(126,200,166,.04)",border:"1px solid rgba(126,200,166,.08)"}}>
+                <div style={{fontSize:10,fontWeight:700,color:"#7EC8A6",textTransform:"uppercase",marginBottom:6}}>Avg UK Rent 2025</div>
+                <div style={{fontSize:20,fontFamily:"'Lora',serif",fontWeight:700}}>£1,332/mo</div>
+                <div style={{fontSize:11,color:"rgba(0,0,0,.4)"}}>ONS Private Rental Index</div>
+              </div>
+              <div style={{padding:14,borderRadius:12,background:"rgba(107,175,207,.04)",border:"1px solid rgba(107,175,207,.08)"}}>
+                <div style={{fontSize:10,fontWeight:700,color:"#6BAFCF",textTransform:"uppercase",marginBottom:6}}>Section 21</div>
+                <div style={{fontSize:20,fontFamily:"'Lora',serif",fontWeight:700}}>Pending Ban</div>
+                <div style={{fontSize:11,color:"rgba(0,0,0,.4)"}}>Renters' Rights Bill 2025</div>
+              </div>
+              <div style={{padding:14,borderRadius:12,background:"rgba(164,126,212,.04)",border:"1px solid rgba(164,126,212,.08)"}}>
+                <div style={{fontSize:10,fontWeight:700,color:"#A47ED4",textTransform:"uppercase",marginBottom:6}}>Survey Avg Age</div>
+                <div style={{fontSize:20,fontFamily:"'Lora',serif",fontWeight:700}}>{agD.length>0?(agD.reduce((s,a)=>s+Number(a.name)*a.value,0)/n).toFixed(1):"—"}</div>
+                <div style={{fontSize:11,color:"rgba(0,0,0,.4)"}}>vs 26 national median</div>
+              </div>
+            </div>
+          </BX>
+          {/* Category + Problems */}
+          <BX t="Problem Categories">
+            <ResponsiveContainer width="100%" height={220}><PieChart><Pie data={catD} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} innerRadius={40} label={({name,percent})=>`${name} ${(percent*100).toFixed(0)}%`} style={{fontSize:10,fontFamily:"'Nunito',sans-serif",fill:"#4A4A4A"}}>{catD.map((_,i)=><Cell key={i} fill={P[i%P.length]}/>)}</Pie><Tooltip contentStyle={tt}/></PieChart></ResponsiveContainer>
+          </BX>
+          <BX t="Rent Control Stance">
+            <ResponsiveContainer width="100%" height={220}><PieChart><Pie data={pi(rcC)} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} innerRadius={40} label={({name,percent})=>`${name.split(" ")[0]} ${(percent*100).toFixed(0)}%`} style={{fontSize:10,fontFamily:"'Nunito',sans-serif",fill:"#4A4A4A"}}>{pi(rcC).map((_,i)=><Cell key={i} fill={P[i%P.length]}/>)}</Pie><Tooltip contentStyle={tt}/></PieChart></ResponsiveContainer>
+          </BX>
+        </div>}
+
+        {/* ═══ REGIONAL TAB ═══ */}
+        {tab==="regional"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
           <BX t="🗺️ Regional Problem Map" s={2}>
             <div style={{display:"flex",gap:20,flexWrap:"wrap"}}>
               <div style={{flex:"0 0 340px"}}><UKMap regionData={rC} onSelect={r=>setSelRegion(r===selRegion?null:r)} selected={selRegion}/></div>
               <div style={{flex:1,minWidth:300}}>
                 {selRegion?(<>
                   <div style={{fontFamily:"'Lora',serif",fontWeight:700,fontSize:18,marginBottom:6}}>📍 {selRegion}</div>
-                  <div style={{fontSize:12,color:"#4A4A4A",marginBottom:10}}>
-                    <b>Council:</b> {REGION_META[selRegion]?.council} · <b>News:</b> {REGION_META[selRegion]?.news?.join(", ")}
-                  </div>
+                  <div style={{fontSize:12,color:"#4A4A4A",marginBottom:10}}><b>Council:</b> {REGION_META[selRegion]?.council} · <b>News:</b> {REGION_META[selRegion]?.news?.join(", ")}</div>
                   <div style={{fontSize:12,marginBottom:10}}><b>Responses:</b> {rC[selRegion]||0}</div>
                   {pL[selRegion]&&<div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:12}}>
-                    {Object.entries(pL[selRegion]).sort((a,b)=>b[1]-a[1]).map(([p,c],i)=>(
-                      <span key={p} className="tag" style={{background:`${P[i%P.length]}18`,color:P[i%P.length]}}>{p} ({c})</span>))}
+                    {Object.entries(pL[selRegion]).sort((a,b)=>b[1]-a[1]).map(([p,c],i)=>(<span key={p} className="tag" style={{background:`${P[i%P.length]}18`,color:P[i%P.length]}}>{p} ({c})</span>))}
                   </div>}
-                  {/* AI Context */}
                   {aiLoading&&!aiCtx[selRegion]?<p style={{fontSize:12,color:"rgba(0,0,0,.3)"}}>Loading AI analysis…</p>:aiCtx[selRegion]&&(<div style={{fontSize:12,lineHeight:1.65}}>
-                    <div style={{marginBottom:8}}><b style={{color:"#E4677E"}}>📰 News Context:</b> {aiCtx[selRegion].news_context}</div>
-                    <div style={{marginBottom:8}}><b style={{color:"#6BAFCF"}}>🏛️ Council Assessment:</b> {aiCtx[selRegion].council_assessment}</div>
-                    <div style={{marginBottom:8}}><b style={{color:"#7EC8A6"}}>🔗 Ecosystem Integration:</b> {aiCtx[selRegion].ecosystem_integration}</div>
-                    <div style={{marginBottom:8}}><b style={{color:"#27AE60"}}>✅ Positive Legal:</b> {aiCtx[selRegion].positive_legal}</div>
-                    <div style={{marginBottom:8}}><b style={{color:"#E4677E"}}>⚠️ Negative Legal:</b> {aiCtx[selRegion].negative_legal}</div>
-                    <div style={{padding:"6px 12px",borderRadius:8,background:aiCtx[selRegion].severity==="high"?"rgba(228,103,126,.1)":aiCtx[selRegion].severity==="medium"?"rgba(244,167,126,.1)":"rgba(126,200,166,.1)",display:"inline-block",fontWeight:700,color:aiCtx[selRegion].severity==="high"?"#E4677E":aiCtx[selRegion].severity==="medium"?"#F4A77E":"#7EC8A6"}}>Severity: {aiCtx[selRegion].severity?.toUpperCase()}</div>
+                    <div style={{marginBottom:8}}><b style={{color:"#E4677E"}}>📰 News:</b> {aiCtx[selRegion].news_context}</div>
+                    <div style={{marginBottom:8}}><b style={{color:"#6BAFCF"}}>🏛️ Council:</b> {aiCtx[selRegion].council_assessment}</div>
+                    <div style={{marginBottom:8}}><b style={{color:"#7EC8A6"}}>🔗 Ecosystem:</b> {aiCtx[selRegion].ecosystem_integration}</div>
+                    <div style={{marginBottom:8}}><b style={{color:"#27AE60"}}>✅ Positive:</b> {aiCtx[selRegion].positive_legal}</div>
+                    <div style={{marginBottom:8}}><b style={{color:"#E4677E"}}>⚠️ Negative:</b> {aiCtx[selRegion].negative_legal}</div>
+                    <div style={{padding:"6px 12px",borderRadius:8,display:"inline-block",fontWeight:700,background:aiCtx[selRegion].severity==="high"?"rgba(228,103,126,.1)":"rgba(126,200,166,.1)",color:aiCtx[selRegion].severity==="high"?"#E4677E":"#7EC8A6"}}>Severity: {(aiCtx[selRegion].severity||"").toUpperCase()}</div>
                   </div>)}
-                </>):(<p style={{color:"rgba(0,0,0,.3)",fontSize:13}}>Click a region on the map to view detailed analysis</p>)}
+                </>):(<p style={{color:"rgba(0,0,0,.3)",fontSize:13}}>Click a region on the map</p>)}
               </div>
             </div>
           </BX>
 
-          {/* PROBLEMS RANKED */}
           <BX t="📊 Problems by Frequency" s={2}>
             <ResponsiveContainer width="100%" height={Math.max(160,pD.length*28)}>
               <BarChart data={pD} layout="vertical" margin={{left:170,right:20,top:4,bottom:4}}>
                 <XAxis type="number" stroke="rgba(0,0,0,.06)" tick={{fill:"rgba(0,0,0,.4)",fontSize:10}}/>
                 <YAxis type="category" dataKey="name" width={160} tick={{fill:"#2C2C2C",fontSize:11,fontWeight:500}}/>
-                <Tooltip contentStyle={tt}/><Bar dataKey="value" radius={[0,6,6,0]} fill="#E4677E" cursor="pointer"
-                  onClick={(d)=>setSelProblem(d.name===selProblem?null:d.name)}/>
+                <Tooltip contentStyle={tt}/><Bar dataKey="value" radius={[0,6,6,0]} fill="#E4677E" cursor="pointer" onClick={(d)=>setSelProblem(d.name===selProblem?null:d.name)}/>
               </BarChart>
             </ResponsiveContainer>
           </BX>
-
-          {/* PROBLEM DEEP DIVE */}
           {selProblem&&LEGAL_DB[selProblem]&&<BX t={`🔍 Deep Dive: ${selProblem}`} s={2}>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12}}>
               <div style={{padding:16,borderRadius:14,background:"rgba(228,103,126,.04)",border:"1px solid rgba(228,103,126,.08)"}}>
@@ -587,41 +598,115 @@ function DashView({data,loading,reload,onClear,onBack}){
                 {LEGAL_DB[selProblem].laws.map((l,i)=><div key={i} style={{fontSize:12,marginBottom:4,paddingLeft:10,borderLeft:"2px solid #E4677E"}}>• {l}</div>)}
               </div>
               <div style={{padding:16,borderRadius:14,background:"rgba(126,200,166,.04)",border:"1px solid rgba(126,200,166,.08)"}}>
-                <div style={{fontWeight:700,fontSize:11,color:"#7EC8A6",textTransform:"uppercase",marginBottom:8}}>📋 Impact Assessment</div>
+                <div style={{fontWeight:700,fontSize:11,color:"#7EC8A6",textTransform:"uppercase",marginBottom:8}}>📋 Impact</div>
                 <div style={{fontSize:12,lineHeight:1.6}}>{LEGAL_DB[selProblem].impact}</div>
               </div>
               <div style={{padding:16,borderRadius:14,background:"rgba(107,175,207,.04)",border:"1px solid rgba(107,175,207,.08)"}}>
-                <div style={{fontWeight:700,fontSize:11,color:"#6BAFCF",textTransform:"uppercase",marginBottom:8}}>📍 Where Reported</div>
-                <div style={{display:"flex",flexWrap:"wrap",gap:4}}>
-                  {regionForProblem.map((loc,i)=><span key={loc} className="tag" style={{background:`${P[i%P.length]}15`,color:P[i%P.length]}}>{loc}</span>)}
-                </div>
-                <div style={{fontSize:11,marginTop:8,color:"rgba(0,0,0,.4)"}}>Category: <b>{PROBLEM_CATEGORIES[selProblem]}</b></div>
+                <div style={{fontWeight:700,fontSize:11,color:"#6BAFCF",textTransform:"uppercase",marginBottom:8}}>📍 Where</div>
+                <div style={{display:"flex",flexWrap:"wrap",gap:4}}>{regionForProblem.map((loc,i)=><span key={loc} className="tag" style={{background:`${P[i%P.length]}15`,color:P[i%P.length]}}>{loc}</span>)}</div>
               </div>
             </div>
           </BX>}
-
-          {/* CATEGORY BREAKDOWN */}
-          <BX t="Problem Categories">
-            <ResponsiveContainer width="100%" height={220}>
-              <PieChart><Pie data={catD} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} innerRadius={40}
-                label={({name,percent})=>`${name} ${(percent*100).toFixed(0)}%`}
-                style={{fontSize:10,fontFamily:"'Nunito',sans-serif",fill:"#4A4A4A"}}>
-                {catD.map((_,i)=><Cell key={i} fill={P[i%P.length]}/>)}</Pie><Tooltip contentStyle={tt}/></PieChart>
-            </ResponsiveContainer>
+          <BX t="📍 Problems by Location" s={2}>
+            <div style={{maxHeight:320,overflowY:"auto"}}>{Object.entries(pL).sort((a,b)=>Object.values(b[1]).reduce((s,v)=>s+v,0)-Object.values(a[1]).reduce((s,v)=>s+v,0)).map(([loc,probs])=>(
+              <div key={loc} style={{marginBottom:14}}>
+                <div style={{fontFamily:"'Lora',serif",fontWeight:600,fontSize:13,marginBottom:5}}>📍 {loc}</div>
+                <div style={{display:"flex",flexWrap:"wrap",gap:4}}>{Object.entries(probs).sort((a,b)=>b[1]-a[1]).map(([p,c],i)=>(<span key={p} className="tag" style={{background:`${P[i%P.length]}15`,color:P[i%P.length]}}>{p} ({c})</span>))}</div>
+              </div>))}</div>
           </BX>
+        </div>}
 
-          {/* FOLLOW-UP ANSWERS */}
-          <BX t="Follow-Up Answers">
+        {/* ═══ INTELLIGENCE TAB ═══ */}
+        {tab==="intelligence"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+          <BX t="🤖 Intelligence Scanner" s={2}>
+            <p style={{fontSize:12,color:"rgba(0,0,0,.4)",marginBottom:12}}>Scans Reddit, Google News, and Companies House based on survey problems.</p>
+            <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:14}}>
+              <select value={intelScanRegion} onChange={e=>setIntelScanRegion(e.target.value)} style={{padding:"8px 14px",borderRadius:100,border:"1.5px solid rgba(0,0,0,.08)",fontFamily:"'Nunito',sans-serif",fontSize:13,background:"#fff"}}>
+                <option value="">All Regions</option>
+                {Object.keys(rC).map(r=><option key={r} value={r}>{r}</option>)}
+              </select>
+              <button className="bt bc" onClick={()=>runScan(intelScanRegion)} disabled={intelLoading||n===0} style={{fontSize:12,padding:"8px 20px"}}>
+                {intelLoading?"⏳ Scanning…":"🔍 Run Scan"}</button>
+              {intel?.lastRun&&<span style={{fontSize:11,color:"rgba(0,0,0,.3)",alignSelf:"center"}}>Last: {new Date(intel.lastRun).toLocaleString()}</span>}
+            </div>
+            {intel?.scans?.length>0&&(()=>{const latest=intel.scans[intel.scans.length-1];return(<div>
+
+              {latest.reddit?.length>0&&<div style={{marginBottom:16}}>
+                <div style={{fontWeight:700,fontSize:13,marginBottom:8,color:"#FF4500"}}>📱 Reddit ({latest.reddit.length} posts)</div>
+                <div style={{maxHeight:300,overflowY:"auto",display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                  {latest.reddit.map((p,i)=>(
+                    <div key={i} style={{padding:12,borderRadius:12,background:"rgba(255,69,0,.03)",border:"1px solid rgba(255,69,0,.08)",fontSize:12}}>
+                      <div style={{fontWeight:700,marginBottom:4}}>{(p.title||"").slice(0,120)}</div>
+                      {p.text&&<div style={{color:"rgba(0,0,0,.5)",marginBottom:6,lineHeight:1.5}}>{p.text.slice(0,200)}{p.text.length>200?"…":""}</div>}
+                      <div style={{display:"flex",gap:8,color:"rgba(0,0,0,.3)",fontSize:10,flexWrap:"wrap"}}>
+                        <span>r/{p.subreddit}</span><span>⬆ {p.score}</span><span>💬 {p.comments}</span>
+                        {p.problem&&<span className="tag" style={{background:"rgba(228,103,126,.1)",color:"#E4677E",padding:"1px 6px"}}>{p.problem}</span>}
+                      </div>
+                      <a href={p.url} target="_blank" rel="noreferrer" style={{fontSize:10,color:"#6BAFCF",marginTop:4,display:"inline-block"}}>Open →</a>
+                    </div>))}
+                </div>
+              </div>}
+
+              {latest.news?.length>0&&<div style={{marginBottom:16}}>
+                <div style={{fontWeight:700,fontSize:13,marginBottom:8,color:"#6BAFCF"}}>📰 News ({latest.news.length} articles)</div>
+                <div style={{maxHeight:250,overflowY:"auto",display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                  {latest.news.map((a,i)=>(
+                    <div key={i} style={{padding:12,borderRadius:12,background:"rgba(107,175,207,.03)",border:"1px solid rgba(107,175,207,.08)",fontSize:12}}>
+                      <div style={{fontWeight:700,marginBottom:4}}>{(a.title||"").slice(0,120)}</div>
+                      <div style={{color:"rgba(0,0,0,.3)",fontSize:10}}>{a.publisher} · {a.date?new Date(a.date).toLocaleDateString():""}</div>
+                      <a href={a.url} target="_blank" rel="noreferrer" style={{fontSize:10,color:"#6BAFCF",display:"block",marginTop:4}}>Read →</a>
+                    </div>))}
+                </div>
+              </div>}
+
+              {(latest.entities?.length>0||latest.companies?.length>0)&&<div>
+                <div style={{fontWeight:700,fontSize:13,marginBottom:8,color:"#A47ED4"}}>🏢 Entities & Companies House</div>
+                {latest.entities?.length>0&&<div style={{marginBottom:8}}>
+                  <span style={{fontSize:11,color:"rgba(0,0,0,.4)"}}>Extracted: </span>
+                  {latest.entities.map((e,i)=><span key={i} className="tag" style={{background:"rgba(164,126,212,.1)",color:"#A47ED4",marginRight:4}}>{e}</span>)}
+                </div>}
+                {latest.companies?.length>0&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                  {latest.companies.map((c,i)=>(
+                    <div key={i} style={{padding:10,borderRadius:10,background:"rgba(164,126,212,.03)",border:"1px solid rgba(164,126,212,.08)",fontSize:11}}>
+                      <div style={{fontWeight:700}}>{c.name}</div>
+                      <div style={{color:"rgba(0,0,0,.4)"}}>#{c.number} · {c.status} · {c.type}</div>
+                      <div style={{color:"rgba(0,0,0,.3)",fontSize:10}}>{c.address}</div>
+                      <a href={c.url} target="_blank" rel="noreferrer" style={{fontSize:10,color:"#6BAFCF"}}>View →</a>
+                    </div>))}
+                </div>}
+              </div>}
+            </div>);})()}
+          </BX>
+        </div>}
+
+        {/* ═══ LEGAL TAB ═══ */}
+        {tab==="legal"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+          <BX t="⚖️ Legal Landscape" s={2}>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,maxHeight:500,overflowY:"auto"}}>
+              {Object.entries(LEGAL_DB).filter(([prob])=>pC[prob]||true).map(([prob,info],i)=>(
+                <div key={prob} style={{padding:14,borderRadius:14,background:"#FBF8F3",border:"1px solid rgba(0,0,0,.04)"}}>
+                  <div style={{fontWeight:700,fontSize:13,marginBottom:6,display:"flex",justifyContent:"space-between"}}>
+                    <span>{prob}</span>
+                    {pC[prob]&&<span className="tag" style={{background:`${P[i%P.length]}15`,color:P[i%P.length]}}>{pC[prob]}</span>}
+                  </div>
+                  <div style={{fontSize:11,marginBottom:6}}><b>Laws:</b> {info.laws.join("; ")}</div>
+                  <div style={{fontSize:11,color:"#4A4A4A",lineHeight:1.5}}>{info.impact}</div>
+                </div>))}
+            </div>
+          </BX>
+        </div>}
+
+        {/* ═══ DATA TAB ═══ */}
+        {tab==="data"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+          <BX t="Follow-Up Answers" s={2}>
             <ResponsiveContainer width="100%" height={Math.max(160,anD.length*24)}>
-              <BarChart data={anD} layout="vertical" margin={{left:180,right:16,top:4,bottom:4}}>
+              <BarChart data={anD} layout="vertical" margin={{left:200,right:16,top:4,bottom:4}}>
                 <XAxis type="number" stroke="rgba(0,0,0,.06)" tick={{fill:"rgba(0,0,0,.4)",fontSize:10}}/>
-                <YAxis type="category" dataKey="name" width={170} tick={{fill:"#2C2C2C",fontSize:10,fontWeight:500}}/>
+                <YAxis type="category" dataKey="name" width={190} tick={{fill:"#2C2C2C",fontSize:10,fontWeight:500}}/>
                 <Tooltip contentStyle={tt}/><Bar dataKey="value" radius={[0,6,6,0]} fill="#7EC8A6"/>
               </BarChart>
             </ResponsiveContainer>
           </BX>
-
-          {/* AGE + AREA + RENT CONTROL */}
           <BX t="Age Distribution">
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={agD.sort((a,b)=>Number(a.name)-Number(b.name))} margin={{left:10,right:10,top:4,bottom:4}}>
@@ -631,368 +716,88 @@ function DashView({data,loading,reload,onClear,onBack}){
               </BarChart>
             </ResponsiveContainer>
           </BX>
-
-          <BX t="Rent Control Stance">
-            <ResponsiveContainer width="100%" height={220}>
-              <PieChart><Pie data={pi(rcC)} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} innerRadius={40}
-                label={({name,percent})=>`${name.split(" ")[0]} ${(percent*100).toFixed(0)}%`}
-                style={{fontSize:10,fontFamily:"'Nunito',sans-serif",fill:"#4A4A4A"}}>
-                {pi(rcC).map((_,i)=><Cell key={i} fill={P[i%P.length]}/>)}</Pie><Tooltip contentStyle={tt}/></PieChart>
-            </ResponsiveContainer>
-          </BX>
-
           <BX t="Monthly Rent">
-            <ResponsiveContainer width="100%" height={220}>
-              <PieChart><Pie data={pi(reC)} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} innerRadius={40}
-                label={({name,percent})=>`${name} ${(percent*100).toFixed(0)}%`}
-                style={{fontSize:9,fontFamily:"'Nunito',sans-serif",fill:"#4A4A4A"}}>
-                {pi(reC).map((_,i)=><Cell key={i} fill={P[(i+4)%P.length]}/>)}</Pie><Tooltip contentStyle={tt}/></PieChart>
-            </ResponsiveContainer>
+            <ResponsiveContainer width="100%" height={220}><PieChart><Pie data={pi(reC)} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} innerRadius={40} label={({name,percent})=>`${name} ${(percent*100).toFixed(0)}%`} style={{fontSize:9,fontFamily:"'Nunito',sans-serif",fill:"#4A4A4A"}}>{pi(reC).map((_,i)=><Cell key={i} fill={P[(i+4)%P.length]}/>)}</Pie><Tooltip contentStyle={tt}/></PieChart></ResponsiveContainer>
           </BX>
-
           <BX t="Income to Rent">
-            <ResponsiveContainer width="100%" height={220}>
-              <PieChart><Pie data={pi(iC)} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} innerRadius={40}
-                label={({name,percent})=>`${name} ${(percent*100).toFixed(0)}%`}
-                style={{fontSize:10,fontFamily:"'Nunito',sans-serif",fill:"#4A4A4A"}}>
-                {pi(iC).map((_,i)=><Cell key={i} fill={P[(i+2)%P.length]}/>)}</Pie><Tooltip contentStyle={tt}/></PieChart>
-            </ResponsiveContainer>
+            <ResponsiveContainer width="100%" height={220}><PieChart><Pie data={pi(iC)} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} innerRadius={40} label={({name,percent})=>`${name} ${(percent*100).toFixed(0)}%`} style={{fontSize:10,fontFamily:"'Nunito',sans-serif",fill:"#4A4A4A"}}>{pi(iC).map((_,i)=><Cell key={i} fill={P[(i+2)%P.length]}/>)}</Pie><Tooltip contentStyle={tt}/></PieChart></ResponsiveContainer>
           </BX>
 
-          {/* PROBLEMS BY LOCATION */}
-          <BX t="📍 Problems Mapped by Location" s={2}>
-            <div style={{maxHeight:320,overflowY:"auto"}}>
-              {Object.entries(pL).sort((a,b)=>Object.values(b[1]).reduce((s,v)=>s+v,0)-Object.values(a[1]).reduce((s,v)=>s+v,0)).map(([loc,probs])=>(
-                <div key={loc} style={{marginBottom:14}}>
-                  <div style={{fontFamily:"'Lora',serif",fontWeight:600,fontSize:13,marginBottom:5}}>📍 {loc}
-                    <span style={{fontSize:10,fontWeight:400,color:"rgba(0,0,0,.35)",marginLeft:8}}>
-                      {REGION_META[loc]?.council||Object.entries(REGION_META).find(([_,m])=>UK[Object.keys(UK).find(k=>UK[k].includes(loc))])?.[1]?.council||""}
-                    </span>
-                  </div>
-                  <div style={{display:"flex",flexWrap:"wrap",gap:4}}>
-                    {Object.entries(probs).sort((a,b)=>b[1]-a[1]).map(([p,c],i)=>(
-                      <span key={p} className="tag" style={{background:`${P[i%P.length]}15`,color:P[i%P.length]}}>{p} ({c})</span>))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </BX>
-
-          {/* ALL RESPONSES */}
           <BX t={`📋 All Responses (${n})`} s={2}>
             <div style={{maxHeight:500,overflowY:"auto"}}>
               {txts.map((r,i)=>(
-                <div key={i} style={{padding:"14px 16px",borderRadius:14,background:"#FBF8F3",border:"1px solid rgba(0,0,0,.04)",marginBottom:10}}>
+                <div key={i} style={{padding:14,borderRadius:14,background:"#FBF8F3",border:"1px solid rgba(0,0,0,.04)",marginBottom:10}}>
                   <div style={{display:"flex",justifyContent:"space-between",flexWrap:"wrap",gap:6,marginBottom:6}}>
                     <span style={{fontWeight:700,fontSize:12}}>Age {r.age} · {r.situation}</span>
                     <span style={{fontSize:11,color:"rgba(0,0,0,.4)"}}>📍 {r.area} · {r.rent} · {r.pctIncome}</span>
                   </div>
-                  <div style={{fontFamily:"'Lora',serif",fontSize:13,fontStyle:"italic",lineHeight:1.6,marginBottom:8}}>
-                    &ldquo;{r.text}&rdquo;</div>
+                  <div style={{fontFamily:"'Lora',serif",fontSize:13,fontStyle:"italic",lineHeight:1.6,marginBottom:8}}>&ldquo;{r.text}&rdquo;</div>
                   {r.problems?.length>0&&<div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:6}}>
                     {r.problems.map((p,j)=>(<span key={j} className="tag" style={{background:`${P[j%P.length]}12`,color:P[j%P.length]}}>{p}</span>))}
                   </div>}
-                  {r.answers&&Object.keys(r.answers).length>0&&<div style={{fontSize:11,color:"rgba(0,0,0,.4)"}}>
-                    Follow-ups: {Object.values(r.answers).join(" · ")}</div>}
-                </div>
-              ))}
+                  {r.answers&&Object.keys(r.answers).length>0&&<div style={{fontSize:11,color:"rgba(0,0,0,.4)"}}>Follow-ups: {Object.values(r.answers).join(" · ")}</div>}
+                </div>))}
             </div>
           </BX>
-
-          {/* SOLUTIONS */}
           {fixes.length>0&&<BX t="💡 Proposed Solutions" s={2}>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,maxHeight:340,overflowY:"auto"}}>
               {fixes.map((f,i)=>(
-                <div key={i} style={{padding:"12px 14px",borderRadius:12,background:"linear-gradient(135deg,rgba(126,200,166,.06),rgba(107,175,207,.04))",border:"1px solid rgba(126,200,166,.08)"}}>
+                <div key={i} style={{padding:12,borderRadius:12,background:"linear-gradient(135deg,rgba(126,200,166,.06),rgba(107,175,207,.04))",border:"1px solid rgba(126,200,166,.08)"}}>
                   <div style={{fontFamily:"'Lora',serif",fontSize:12.5,lineHeight:1.55}}>&ldquo;{f.text}&rdquo;</div>
                   <div style={{fontSize:10,color:"rgba(0,0,0,.3)",fontWeight:600,marginTop:5}}>📍 {f.area}</div>
-                </div>
-              ))}
+                </div>))}
             </div>
           </BX>}
+        </div>}
 
-          {/* ══ MIND MAP: INVESTIGATION FLOW ══ */}
-          <BX t="🧠 Investigation Mind Map" s={2}>
-            <p style={{fontSize:12,color:"rgba(0,0,0,.4)",marginBottom:14}}>Click any problem → select a region → run AI analysis. Trace from symptom to root cause.</p>
-            <div style={{display:"flex",gap:10,flexWrap:"wrap",marginBottom:14}}>
-              {pD.map((p,i) => (
-                <button key={p.name} onClick={()=>setInvestigationPanel(investigationPanel===p.name?null:p.name)}
-                  style={{padding:"8px 16px",borderRadius:100,fontSize:12,fontWeight:700,cursor:"pointer",
-                    border:investigationPanel===p.name?"2px solid "+P[i%P.length]:"1.5px solid rgba(0,0,0,.08)",
-                    background:investigationPanel===p.name?P[i%P.length]+"15":"#fff",
-                    color:investigationPanel===p.name?P[i%P.length]:"#4A4A4A",
-                    fontFamily:"'Nunito',sans-serif"}}>{p.name} ({p.value})</button>
-              ))}
-            </div>
-            {investigationPanel && (
-              <div style={{background:"#FBF8F3",borderRadius:16,padding:20,border:"1px solid rgba(0,0,0,.06)"}}>
-                <div style={{fontFamily:"'Lora',serif",fontWeight:700,fontSize:16,marginBottom:12}}>
-                  🔍 Investigating: {investigationPanel}</div>
-                <div style={{fontSize:12,color:"rgba(0,0,0,.4)",marginBottom:14}}>
-                  Category: {PROBLEM_CATEGORIES[investigationPanel]||"General"} · {pC[investigationPanel]||0} reports · 
-                  Regions: {Object.entries(pL).filter(([_,p])=>p[investigationPanel]).map(([l])=>l).join(", ")||"None"}
-                </div>
-                
-                {/* Action buttons */}
-                <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:16}}>
-                  {Object.entries(pL).filter(([_,p])=>p[investigationPanel]).slice(0,4).map(([loc])=>(
-                    <div key={loc} style={{display:"flex",gap:4}}>
-                      <button className="bt bgh" onClick={()=>runInvestigation(investigationPanel,loc,"rootcause")}
-                        style={{fontSize:10,padding:"6px 12px"}}>🔬 Root Cause ({loc})</button>
-                      <button className="bt bgh" onClick={()=>runInvestigation(investigationPanel,loc,"solutions")}
-                        style={{fontSize:10,padding:"6px 12px"}}>💡 Solutions ({loc})</button>
-                      <button className="bt bgh" onClick={()=>runInvestigation(investigationPanel,loc,"social")}
-                        style={{fontSize:10,padding:"6px 12px"}}>📱 Social ({loc})</button>
-                    </div>
-                  ))}
-                </div>
-                {aiInvLoading && <p style={{fontSize:12,color:"#E4677E"}}>⏳ Running AI analysis...</p>}
-                
-                {/* Results */}
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-                  {Object.entries(aiResult).filter(([k])=>k.startsWith(investigationPanel)).map(([key,val])=>{
-                    const type=key.includes("rootcause")?"Root Cause Analysis":key.includes("solutions")?"Solution Comparison":"Social Landscape";
-                    const region=key.replace(investigationPanel,"").replace("rootcause","").replace("solutions","").replace("social","");
-                    return(
-                      <div key={key} style={{padding:14,borderRadius:12,background:"#fff",border:"1px solid rgba(0,0,0,.06)"}}>
-                        <div style={{fontWeight:700,fontSize:12,color:"#E4677E",marginBottom:6}}>{type} — {region}</div>
-                        <pre style={{fontSize:11,lineHeight:1.5,whiteSpace:"pre-wrap",color:"#2C2C2C",fontFamily:"'Nunito',sans-serif"}}>
-                          {JSON.stringify(val,null,2)}</pre>
-                      </div>
-                    );
-                  })}
-                </div>
-                
-                {/* Legal context for this problem */}
-                {LEGAL_DB[investigationPanel] && (
-                  <div style={{marginTop:14,padding:14,borderRadius:12,background:"rgba(107,175,207,.04)",border:"1px solid rgba(107,175,207,.08)"}}>
-                    <div style={{fontWeight:700,fontSize:12,color:"#6BAFCF",marginBottom:6}}>⚖️ Legal Framework</div>
-                    {LEGAL_DB[investigationPanel].laws.map((l,i)=><div key={i} style={{fontSize:11,marginBottom:3,paddingLeft:10,borderLeft:"2px solid #6BAFCF"}}>• {l}</div>)}
-                    <div style={{fontSize:11,marginTop:8,lineHeight:1.5,color:"#4A4A4A"}}>{LEGAL_DB[investigationPanel].impact}</div>
-                  </div>
-                )}
-              </div>
-            )}
-          </BX>
-
-          {/* ══ ENTITY INTELLIGENCE ══ */}
-          {entities.length > 0 && <BX t="🏢 Mentioned Entities (Businesses, Agents, Landlords)" s={2}>
-            <p style={{fontSize:12,color:"rgba(0,0,0,.4)",marginBottom:10}}>Names extracted from free-text responses. Flagged for further investigation.</p>
-            <div style={{maxHeight:300,overflowY:"auto"}}>
-              {entities.map((e,i) => (
-                <div key={e.name} style={{padding:12,borderRadius:12,background:"#FBF8F3",border:"1px solid rgba(0,0,0,.04)",marginBottom:8}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                    <span style={{fontWeight:700,fontSize:13}}>{e.name}</span>
-                    <div style={{display:"flex",gap:6}}>
-                      <span className="tag" style={{background:"rgba(228,103,126,.1)",color:"#E4677E"}}>{e.count}x mentioned</span>
-                      {e.regions.map(r=><span key={r} className="tag" style={{background:"rgba(126,200,166,.1)",color:"#7EC8A6"}}>{r}</span>)}
-                    </div>
-                  </div>
-                  {e.contexts.map((ctx,j)=><div key={j} style={{fontSize:11,color:"rgba(0,0,0,.5)",fontStyle:"italic",marginBottom:4}}>
-                    "...{ctx}..."</div>)}
-                </div>
-              ))}
-            </div>
-          </BX>}
-
-          {/* 🤖 INTELLIGENCE AGENT */}
-          <BX t="🤖 Intelligence Agent — Social & News Scanner" s={2}>
-            <p style={{fontSize:12,color:"rgba(0,0,0,.4)",marginBottom:12}}>
-              Scans Reddit (r/HousingUK, r/LegalAdviceUK, regional subs), Google News, and Companies House based on problems identified in survey responses.</p>
-            <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:14}}>
-              <select value={intelScanRegion} onChange={e=>setIntelScanRegion(e.target.value)}
-                style={{padding:"8px 14px",borderRadius:100,border:"1.5px solid rgba(0,0,0,.08)",fontFamily:"'Nunito',sans-serif",fontSize:13,background:"#fff"}}>
-                <option value="">All Regions</option>
-                {Object.keys(rC).map(r=><option key={r} value={r}>{r}</option>)}
-              </select>
-              <button className="bt bc" onClick={()=>runScan(intelScanRegion)} disabled={intelLoading||n===0}
-                style={{fontSize:12,padding:"8px 20px"}}>
-                {intelLoading?"⏳ Scanning...":"🔍 Run Intelligence Scan"}
-              </button>
-              {intel?.lastRun&&<span style={{fontSize:11,color:"rgba(0,0,0,.3)",alignSelf:"center"}}>
-                Last scan: {new Date(intel.lastRun).toLocaleString()}</span>}
-            </div>
-
-            {intel?.scans?.length>0&&(()=>{
-              const latest=intel.scans[intel.scans.length-1];
-              return(<div>
-                {/* Reddit Posts */}
-                {latest.reddit?.length>0&&<div style={{marginBottom:16}}>
-                  <div style={{fontWeight:700,fontSize:13,marginBottom:8,color:"#FF4500"}}>
-                    📱 Reddit Posts ({latest.reddit.length})</div>
-                  <div style={{maxHeight:300,overflowY:"auto",display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-                    {latest.reddit.map((p,i)=>(
-                      <div key={i} style={{padding:12,borderRadius:12,background:"rgba(255,69,0,.03)",border:"1px solid rgba(255,69,0,.08)",fontSize:12}}>
-                        <div style={{fontWeight:700,marginBottom:4}}>{p.title?.slice(0,120)}</div>
-                        {p.text&&<div style={{color:"rgba(0,0,0,.5)",marginBottom:6,lineHeight:1.5}}>{p.text.slice(0,200)}{p.text.length>200?"...":""}</div>}
-                        <div style={{display:"flex",gap:10,color:"rgba(0,0,0,.3)",fontSize:10}}>
-                          <span>r/{p.subreddit}</span>
-                          <span>⬆ {p.score}</span>
-                          <span>💬 {p.comments}</span>
-                          {p.problem&&<span className="tag" style={{background:"rgba(228,103,126,.1)",color:"#E4677E",padding:"1px 6px"}}>{p.problem}</span>}
-                        </div>
-                        <a href={p.url} target="_blank" rel="noreferrer" style={{fontSize:10,color:"#6BAFCF",marginTop:4,display:"inline-block"}}>Open →</a>
-                      </div>
-                    ))}
-                  </div>
-                </div>}
-
-                {/* News Articles */}
-                {latest.news?.length>0&&<div style={{marginBottom:16}}>
-                  <div style={{fontWeight:700,fontSize:13,marginBottom:8,color:"#6BAFCF"}}>
-                    📰 News Articles ({latest.news.length})</div>
-                  <div style={{maxHeight:250,overflowY:"auto",display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-                    {latest.news.map((a,i)=>(
-                      <div key={i} style={{padding:12,borderRadius:12,background:"rgba(107,175,207,.03)",border:"1px solid rgba(107,175,207,.08)",fontSize:12}}>
-                        <div style={{fontWeight:700,marginBottom:4}}>{a.title?.slice(0,120)}</div>
-                        <div style={{color:"rgba(0,0,0,.3)",fontSize:10,marginBottom:4}}>{a.publisher} · {a.date?new Date(a.date).toLocaleDateString():""}</div>
-                        {a.problem&&<span className="tag" style={{background:"rgba(228,103,126,.1)",color:"#E4677E",padding:"1px 6px",fontSize:9}}>{a.problem}</span>}
-                        <a href={a.url} target="_blank" rel="noreferrer" style={{fontSize:10,color:"#6BAFCF",display:"block",marginTop:4}}>Read article →</a>
-                      </div>
-                    ))}
-                  </div>
-                </div>}
-
-                {/* Entities & Companies */}
-                {(latest.entities?.length>0||latest.companies?.length>0)&&<div>
-                  <div style={{fontWeight:700,fontSize:13,marginBottom:8,color:"#A47ED4"}}>
-                    🏢 Entities & Companies House Matches</div>
-                  {latest.entities?.length>0&&<div style={{marginBottom:8}}>
-                    <span style={{fontSize:11,color:"rgba(0,0,0,.4)"}}>Extracted from responses: </span>
-                    {latest.entities.map((e,i)=><span key={i} className="tag" style={{background:"rgba(164,126,212,.1)",color:"#A47ED4",marginRight:4}}>{e}</span>)}
-                  </div>}
-                  {latest.companies?.length>0&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-                    {latest.companies.map((c,i)=>(
-                      <div key={i} style={{padding:10,borderRadius:10,background:"rgba(164,126,212,.03)",border:"1px solid rgba(164,126,212,.08)",fontSize:11}}>
-                        <div style={{fontWeight:700}}>{c.name}</div>
-                        <div style={{color:"rgba(0,0,0,.4)"}}>#{c.number} · {c.status} · {c.type}</div>
-                        <div style={{color:"rgba(0,0,0,.3)",fontSize:10}}>{c.address}</div>
-                        <div style={{display:"flex",justifyContent:"space-between",marginTop:4}}>
-                          <span style={{fontSize:10}}>Matched: "{c.matchedEntity}"</span>
-                          <a href={c.url} target="_blank" rel="noreferrer" style={{fontSize:10,color:"#6BAFCF"}}>View →</a>
-                        </div>
-                      </div>
-                    ))}
-                  </div>}
-                </div>}
-              </div>);
-            })()}
-          </BX>
-
-          {/* NOTE-TAKING PAD */}
+        {/* ═══ TOOLS TAB ═══ */}
+        {tab==="tools"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
           <BX t="📝 Research Notes" s={2}>
-            <p style={{fontSize:12,color:"rgba(0,0,0,.4)",marginBottom:10}}>Write observations, risks, and notable findings. Export as Word document.</p>
+            <p style={{fontSize:12,color:"rgba(0,0,0,.4)",marginBottom:10}}>Write observations, risks, notable findings. Export as spreadsheet.</p>
             <textarea value={notes} onChange={e=>setNotes(e.target.value)}
               style={{width:"100%",minHeight:200,padding:16,borderRadius:14,border:"1.5px solid rgba(0,0,0,.08)",background:"rgba(251,248,243,.6)",fontFamily:"'Lora',serif",fontSize:14,lineHeight:1.7,color:"#2C2C2C",resize:"vertical",outline:"none"}}
-              placeholder="Type your research notes here. Observations, risk factors, notable patterns, judgment calls..." />
+              placeholder="Type your research notes here…" />
             <div style={{display:"flex",gap:8,marginTop:10}}>
               <button className="bt bc" onClick={()=>{
                 const wb=XLSX.utils.book_new();
-                const ws=XLSX.utils.aoa_to_sheet([["RentTalk Research Notes"],[""],[notes],[""],["Exported: "+new Date().toISOString()]]);
-                XLSX.utils.book_append_sheet(wb,ws,"Notes");
+                XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["RentTalk Research Notes"],[""],["Date: "+new Date().toISOString()],[""],[notes]]),"Notes");
                 XLSX.writeFile(wb,"RentTalk_Notes_"+new Date().toISOString().split("T")[0]+".xlsx");
               }} style={{fontSize:11,padding:"8px 16px"}}>📥 Export Notes</button>
               <span style={{fontSize:11,color:"rgba(0,0,0,.3)",alignSelf:"center"}}>{notes.length} characters</span>
             </div>
           </BX>
 
-          {/* UK HOUSING BENCHMARKS */}
-          <BX t="📏 UK Housing Benchmarks Comparison" s={2}>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:10}}>
-              <div style={{padding:14,borderRadius:12,background:"rgba(228,103,126,.04)",border:"1px solid rgba(228,103,126,.08)"}}>
-                <div style={{fontSize:10,fontWeight:700,color:"#E4677E",textTransform:"uppercase",marginBottom:6}}>Affordability Threshold</div>
-                <div style={{fontSize:20,fontFamily:"'Lora',serif",fontWeight:700}}>30%</div>
-                <div style={{fontSize:11,color:"rgba(0,0,0,.4)"}}>Max recommended income-to-rent ratio (Shelter UK)</div>
-                <div style={{fontSize:12,fontWeight:700,color:p4>30?"#E4677E":"#7EC8A6",marginTop:6}}>{p4>30?"⚠️ "+p4+"% of respondents EXCEED this":"✅ Within threshold"}</div>
-              </div>
-              <div style={{padding:14,borderRadius:12,background:"rgba(126,200,166,.04)",border:"1px solid rgba(126,200,166,.08)"}}>
-                <div style={{fontSize:10,fontWeight:700,color:"#7EC8A6",textTransform:"uppercase",marginBottom:6}}>Avg UK Rent (2025)</div>
-                <div style={{fontSize:20,fontFamily:"'Lora',serif",fontWeight:700}}>£1,332/mo</div>
-                <div style={{fontSize:11,color:"rgba(0,0,0,.4)"}}>ONS Private Rental Index, England</div>
-                <div style={{fontSize:12,fontWeight:700,marginTop:6}}>Survey median: {Object.keys(reC).length>0?Object.entries(reC).sort((a,b)=>b[1]-a[1])[0][0]:"N/A"}</div>
-              </div>
-              <div style={{padding:14,borderRadius:12,background:"rgba(107,175,207,.04)",border:"1px solid rgba(107,175,207,.08)"}}>
-                <div style={{fontSize:10,fontWeight:700,color:"#6BAFCF",textTransform:"uppercase",marginBottom:6}}>Section 21 Status</div>
-                <div style={{fontSize:20,fontFamily:"'Lora',serif",fontWeight:700}}>Pending Abolition</div>
-                <div style={{fontSize:11,color:"rgba(0,0,0,.4)"}}>Renters' Rights Bill 2025 — Royal Assent pending</div>
-                <div style={{fontSize:12,fontWeight:700,color:pC["Tenure insecurity"]?"#E4677E":"#7EC8A6",marginTop:6}}>{pC["Tenure insecurity"]?pC["Tenure insecurity"]+" respondents cite tenure insecurity":"Not reported"}</div>
-              </div>
-              <div style={{padding:14,borderRadius:12,background:"rgba(164,126,212,.04)",border:"1px solid rgba(164,126,212,.08)"}}>
-                <div style={{fontSize:10,fontWeight:700,color:"#A47ED4",textTransform:"uppercase",marginBottom:6}}>Median Age of Renters</div>
-                <div style={{fontSize:20,fontFamily:"'Lora',serif",fontWeight:700}}>26 yrs</div>
-                <div style={{fontSize:11,color:"rgba(0,0,0,.4)"}}>English Housing Survey 2023-24</div>
-                <div style={{fontSize:12,fontWeight:700,marginTop:6}}>Survey avg: {agD.length>0?(agD.reduce((s,a)=>s+Number(a.name)*a.value,0)/n).toFixed(1):"N/A"} yrs</div>
-              </div>
-            </div>
+          <BX t="📥 Data Export" s={2}>
+            <p style={{fontSize:12,color:"rgba(0,0,0,.4)",marginBottom:12}}>Export all survey data as a structured Excel workbook (7 sheets).</p>
+            <button className="bt bp" onClick={()=>exportToExcel(data,aggForExport)} style={{fontSize:13,padding:"12px 24px"}}>
+              📥 Export Full Research Dataset (.xlsx)</button>
           </BX>
 
-          {/* SEVERITY SCORING */}
-          <BX t="🔴 Problem Severity Matrix" s={2}>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))",gap:8}}>
-              {pD.map((p,i)=>{
-                const pct=((p.value/n)*100);
-                const severity=pct>50?"CRITICAL":pct>30?"HIGH":pct>15?"MEDIUM":"LOW";
-                const sCol=severity==="CRITICAL"?"#E4677E":severity==="HIGH"?"#F4A77E":severity==="MEDIUM"?"#F7CE76":"#7EC8A6";
-                return(<div key={p.name} style={{padding:12,borderRadius:10,background:`${sCol}08`,border:`1px solid ${sCol}20`}}>
-                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-                    <span style={{fontSize:12,fontWeight:700}}>{p.name}</span>
-                    <span style={{fontSize:10,fontWeight:800,color:sCol,padding:"2px 8px",borderRadius:100,background:`${sCol}15`}}>{severity}</span>
-                  </div>
-                  <div style={{fontSize:11,color:"rgba(0,0,0,.4)"}}>{p.value} reports ({pct.toFixed(0)}%) · {PROBLEM_CATEGORIES[p.name]||"General"}</div>
-                  <div style={{height:4,borderRadius:2,background:"rgba(0,0,0,.06)",marginTop:6}}>
-                    <div style={{height:"100%",borderRadius:2,background:sCol,width:`${Math.min(pct*2,100)}%`}}/>
-                  </div>
-                </div>);
-              })}
-            </div>
-          </BX>
-
-          {/* PROTECTED DELETE */}
           <BX t="⚠️ Data Management" s={2}>
-            <p style={{fontSize:12,color:"rgba(0,0,0,.4)",marginBottom:12}}>Clearing data is permanent. An export will be forced before deletion.</p>
+            <p style={{fontSize:12,color:"rgba(0,0,0,.4)",marginBottom:12}}>Clearing is permanent. Data exported automatically before deletion.</p>
             {!showDeleteModal?
-              <button className="bt bgh" onClick={()=>setShowDeleteModal(true)} style={{fontSize:12,padding:"8px 16px",color:"#E4677E"}}>
-                🗑️ Request Data Clear</button>
+              <button className="bt bgh" onClick={()=>setShowDeleteModal(true)} style={{fontSize:12,padding:"8px 16px",color:"#E4677E"}}>🗑️ Request Data Clear</button>
             :<div style={{padding:20,borderRadius:14,background:"rgba(228,103,126,.04)",border:"1px solid rgba(228,103,126,.15)"}}>
-              <div style={{fontWeight:700,fontSize:14,color:"#E4677E",marginBottom:10}}>⚠️ Confirm Data Deletion</div>
-              <p style={{fontSize:12,marginBottom:12}}>Step 1: Data will be exported automatically. Step 2: Enter deletion password.</p>
-              <input className="inp" type="password" value={deletePin} onChange={e=>{setDeletePin(e.target.value);setDeletePinErr(false);}}
-                placeholder="Enter deletion password" style={{marginBottom:10}}/>
-              {deletePinErr&&<p style={{color:"#E4677E",fontSize:12,marginBottom:8}}>Incorrect deletion password.</p>}
+              <div style={{fontWeight:700,fontSize:14,color:"#E4677E",marginBottom:10}}>⚠️ Confirm Deletion</div>
+              <p style={{fontSize:12,marginBottom:12}}>Step 1: Data exported. Step 2: Enter deletion password.</p>
+              <input className="inp" type="password" value={deletePin} onChange={e=>{setDeletePin(e.target.value);setDeletePinErr(false);}} placeholder="Deletion password" style={{marginBottom:10}}/>
+              {deletePinErr&&<p style={{color:"#E4677E",fontSize:12,marginBottom:8}}>Incorrect password.</p>}
               <div style={{display:"flex",gap:8}}>
                 <button className="bt bgh" onClick={()=>{setShowDeleteModal(false);setDeletePin("");}} style={{fontSize:12,padding:"8px 16px"}}>Cancel</button>
                 <button className="bt bp" onClick={()=>{
-                  if(deletePin===DELETE_PIN){
-                    exportToExcel(data,aggForExport);
-                    setTimeout(()=>{onClear();setShowDeleteModal(false);setDeletePin("");},500);
-                  }else{setDeletePinErr(true);setDeletePin("");}
-                }} style={{fontSize:12,padding:"8px 16px",background:"#E4677E"}}>Export & Delete All Data</button>
+                  if(deletePin===DELETE_PIN){exportToExcel(data,aggForExport);setTimeout(()=>{onClear();setShowDeleteModal(false);setDeletePin("");},500);}
+                  else{setDeletePinErr(true);setDeletePin("");}
+                }} style={{fontSize:12,padding:"8px 16px",background:"#E4677E"}}>Export & Delete</button>
               </div>
             </div>}
           </BX>
+        </div>}
 
-          {/* LEGAL LANDSCAPE */}
-          <BX t="⚖️ Legal Landscape Overview" s={2}>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,maxHeight:400,overflowY:"auto"}}>
-              {Object.entries(LEGAL_DB).filter(([prob])=>pC[prob]).map(([prob,info],i)=>(
-                <div key={prob} style={{padding:"14px 16px",borderRadius:14,background:"#FBF8F3",border:"1px solid rgba(0,0,0,.04)"}}>
-                  <div style={{fontWeight:700,fontSize:13,marginBottom:6,display:"flex",justifyContent:"space-between"}}>
-                    <span>{prob}</span>
-                    <span className="tag" style={{background:`${P[i%P.length]}15`,color:P[i%P.length]}}>{pC[prob]} reports</span>
-                  </div>
-                  <div style={{fontSize:11,marginBottom:6}}><b>Laws:</b> {info.laws.join("; ")}</div>
-                  <div style={{fontSize:11,color:"#4A4A4A",lineHeight:1.5}}>{info.impact}</div>
-                </div>
-              ))}
-            </div>
-          </BX>
-        </div>
       </>)}
     </div>
   );
 }
 
-/* ═══ COMPONENTS ═══ */
 function FL({children,t}){return(<div style={{fontFamily:"'Lora',serif",fontSize:13,fontWeight:600,marginBottom:8,marginTop:t||0}}>{children}</div>)}
 function CG({items,sel,set}){return(<div style={{display:"flex",flexWrap:"wrap",gap:6}}>{items.map(v=>(<button key={v} className={`chip ${sel===v?"s":""}`} onClick={()=>set(v)}>{v}</button>))}</div>)}
 function NB({bk,nx,dis}){return(<div style={{display:"flex",gap:10,marginTop:20}}>{bk&&<button className="bt bgh" onClick={bk}>← Back</button>}<button className="bt bp" onClick={nx} disabled={dis} style={{flex:1,justifyContent:"center"}}>Continue →</button></div>)}
