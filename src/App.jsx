@@ -1,6 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import * as XLSX from "xlsx";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
 
 const ADMIN_PIN = "zubife6ezklm5nthmalu78gytklm3shan7nekomo";
 const DELETE_PIN = "zbekbermraaaaaaatbatshufut3alm9";
@@ -26,18 +28,18 @@ const UK = {
 };
 
 const RMETA = {
-  "London":{council:"Greater London Authority",news:["Evening Standard","BBC London"]},
-  "South East":{council:"Various County Councils",news:["BBC South East","The Argus"]},
-  "South West":{council:"Various County Councils",news:["BBC West","Bristol Post"]},
-  "East of England":{council:"Various County Councils",news:["BBC East","Cambridge News"]},
-  "West Midlands":{council:"West Midlands Combined Authority",news:["BBC Midlands","Birmingham Mail"]},
-  "East Midlands":{council:"Various County Councils",news:["BBC East Midlands","Nottingham Post"]},
-  "North West":{council:"Greater Manchester Combined Authority",news:["BBC North West","MEN"]},
-  "North East":{council:"North East Combined Authority",news:["BBC North East","Chronicle Live"]},
-  "Yorkshire & Humber":{council:"Various Councils",news:["BBC Yorkshire","Yorkshire Post"]},
-  "Scotland":{council:"Scottish Government",news:["BBC Scotland","The Scotsman"]},
-  "Wales":{council:"Welsh Government / Senedd",news:["BBC Wales","Wales Online"]},
-  "Northern Ireland":{council:"NI Executive",news:["BBC NI","Belfast Telegraph"]}
+  "London":{council:"Greater London Authority",news:["Evening Standard","BBC London"],lat:51.509,lng:-0.118},
+  "South East":{council:"Various County Councils",news:["BBC South East","The Argus"],lat:51.27,lng:-0.52},
+  "South West":{council:"Various County Councils",news:["BBC West","Bristol Post"],lat:50.95,lng:-2.59},
+  "East of England":{council:"Various County Councils",news:["BBC East","Cambridge News"],lat:52.24,lng:0.90},
+  "West Midlands":{council:"West Midlands Combined Authority",news:["BBC Midlands","Birmingham Mail"],lat:52.49,lng:-1.90},
+  "East Midlands":{council:"Various County Councils",news:["BBC East Midlands","Nottingham Post"],lat:52.83,lng:-1.25},
+  "North West":{council:"Greater Manchester Combined Authority",news:["BBC North West","MEN"],lat:53.48,lng:-2.24},
+  "North East":{council:"North East Combined Authority",news:["BBC North East","Chronicle Live"],lat:54.97,lng:-1.61},
+  "Yorkshire & Humber":{council:"Various Councils",news:["BBC Yorkshire","Yorkshire Post"],lat:53.80,lng:-1.55},
+  "Scotland":{council:"Scottish Government",news:["BBC Scotland","The Scotsman"],lat:56.49,lng:-4.20},
+  "Wales":{council:"Welsh Government / Senedd",news:["BBC Wales","Wales Online"],lat:52.13,lng:-3.63},
+  "Northern Ireland":{council:"NI Executive",news:["BBC NI","Belfast Telegraph"],lat:54.60,lng:-6.65}
 };
 
 const LEGAL = {
@@ -645,42 +647,7 @@ function Dash({data,loading,reload,onClear,onBack}){
       </div>}
 
       {/* ═ REGIONAL TAB ═ */}
-      {tab==="regional"&&<div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
-          <div className="card" style={{gridColumn:"1/-1"}}>
-            <p className="label">Select a region</p>
-            <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:16}}>
-              {Object.keys(rC).map(r=>(<button key={r} className={`chip ${selR===r?"on":""}`} onClick={()=>setSelR(selR===r?null:r)}>{r} ({rC[r]})</button>))}
-            </div>
-            {selR&&<div style={{borderTop:"1px solid rgba(0,0,0,.06)",paddingTop:16}}>
-              <h3 className="serif" style={{fontSize:18,marginBottom:6}}>📍 {selR}</h3>
-              <div style={{fontSize:12,color:"#6B6B6B",marginBottom:10}}>Council: {RMETA[selR]?.council} · News: {RMETA[selR]?.news?.join(", ")}</div>
-              {pL[selR]&&<div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:14}}>
-                {Object.entries(pL[selR]).sort((a,b)=>b[1]-a[1]).map(([p,c],i)=>(<span key={p} className="tag">{p} ({c})</span>))}
-              </div>}
-              {aiL&&!ai[selR]?<p style={{fontSize:12,color:"#999"}}>Loading analysis…</p>:ai[selR]&&(
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,fontSize:12,lineHeight:1.6}}>
-                  <div style={{padding:12,borderRadius:10,border:"1px solid rgba(0,0,0,.04)"}}><b>📰 Local context</b><br/>{ai[selR].news}</div>
-                  <div style={{padding:12,borderRadius:10,border:"1px solid rgba(0,0,0,.04)"}}><b>🏛️ Council</b><br/>{ai[selR].council}</div>
-                  <div style={{padding:12,borderRadius:10,border:"1px solid rgba(0,0,0,.04)"}}><b>🔗 Ecosystem</b><br/>{ai[selR].ecosystem}</div>
-                  <div style={{padding:12,borderRadius:10,border:"1px solid rgba(0,0,0,.04)"}}>
-                    <b>✅</b> {ai[selR].positive}<br/><b>⚠️</b> {ai[selR].negative}<br/>
-                    <span style={{fontWeight:700,marginTop:6,display:"inline-block"}}>Severity: {(ai[selR].severity||"").toUpperCase()}</span>
-                  </div>
-                </div>
-              )}
-            </div>}
-          </div>
-          {/* Problems by location */}
-          <div className="card" style={{gridColumn:"1/-1"}}><p className="label">All locations</p>
-            <div style={{maxHeight:400,overflowY:"auto"}}>{Object.entries(pL).sort((a,b)=>Object.values(b[1]).reduce((s,v)=>s+v,0)-Object.values(a[1]).reduce((s,v)=>s+v,0)).map(([loc,probs])=>(
-              <div key={loc} style={{marginBottom:12}}><span style={{fontWeight:700,fontSize:13}}>{loc}</span>
-                <span style={{fontSize:10,color:"#999",marginLeft:8}}>{RMETA[loc]?.council||""}</span>
-                <div style={{display:"flex",flexWrap:"wrap",gap:4,marginTop:4}}>{Object.entries(probs).sort((a,b)=>b[1]-a[1]).map(([p,c])=>(<span key={p} className="tag">{p} ({c})</span>))}</div>
-              </div>))}</div>
-          </div>
-        </div>
-      </div>}
+      {tab==="regional"&&<RegionalTab data={data} rC={rC} pC={pC} pL={pL} pD={sr(pC)} n={n} txts={txts} selR={selR} setSelR={setSelR} ai={ai} aiL={aiL} loadAI={loadAI} fixes={fixes}/>}
 
       {/* ═ INTEL TAB ═ */}
       {tab==="intel"&&<div>
@@ -759,6 +726,233 @@ function Dash({data,loading,reload,onClear,onBack}){
     </div>
   );
 }
+
+
+/* ═══════════ REGIONAL TAB — 3D Map + Ticket System + KPIs ═══════════ */
+function RegionalTab({data,rC,pC,pL,pD,n,txts,selR,setSelR,ai,aiL,loadAI,fixes}){
+  const mapRef=useRef(null);
+  const mapInst=useRef(null);
+  const [selProblem,setSelProblem]=useState(null);
+  const [tickets,setTickets]=useState([]);
+
+  // Severity colors
+  const SEV_COLORS={CRITICAL:"#C0392B",HIGH:"#E67E22",MEDIUM:"#F1C40F",LOW:"#27AE60",POSITIVE:"#2980B9"};
+  const probColor=(prob,count)=>{const pct=n>0?(count/n)*100:0;return pct>40?SEV_COLORS.CRITICAL:pct>25?SEV_COLORS.HIGH:pct>10?SEV_COLORS.MEDIUM:SEV_COLORS.LOW;};
+
+  // Dynamic threshold: base 2, +1 per 10 responses
+  const threshold=Math.max(2,Math.floor(n/10)+1);
+
+  // Priority score: considers solvability, count, and market opportunity
+  const SOLVE_EASE={"Rental affordability":2,"Poor conditions":7,"Landlord issues":5,"Tenure insecurity":3,"Market competition":1,"High upfront costs":6,"Energy & bills":8,"Discrimination":4,"Mental health":3,"Unable to save":2};
+  const PROFIT_OPP={"Rental affordability":3,"Poor conditions":8,"Landlord issues":6,"Tenure insecurity":4,"Market competition":5,"High upfront costs":7,"Energy & bills":9,"Discrimination":3,"Mental health":5,"Unable to save":4};
+
+  const calcPriority=(prob,count)=>{
+    const ease=SOLVE_EASE[prob]||5;
+    const profit=PROFIT_OPP[prob]||5;
+    const demand=Math.min((count/Math.max(n,1))*100,100);
+    // Priority = weighted: 40% ease of solving + 30% demand + 30% profit opportunity
+    return Math.round(ease*4+demand*0.3+profit*3);
+  };
+
+  // Generate tickets when problems cross threshold
+  useEffect(()=>{
+    const t=[];
+    Object.entries(pC).forEach(([prob,count])=>{
+      const priority=calcPriority(prob,count);
+      const pct=n>0?((count/n)*100).toFixed(1):0;
+      const severity=pct>40?"CRITICAL":pct>25?"HIGH":pct>10?"MEDIUM":"LOW";
+      const meetsThreshold=count>=threshold;
+      // Find related solutions from survey
+      const solutions=fixes.filter(f=>txts.find(tx=>tx.area===f.area&&(tx.problems||[]).includes(prob))).map(f=>f.text).slice(0,3);
+      // Find regions where this problem appears
+      const regions=Object.entries(pL).filter(([,probs])=>probs[prob]).map(([loc,probs])=>({loc,count:probs[prob]})).sort((a,b)=>b.count-a.count);
+      t.push({prob,count,pct,severity,priority,meetsThreshold,solutions,regions,ease:SOLVE_EASE[prob]||5,profit:PROFIT_OPP[prob]||5});
+    });
+    t.sort((a,b)=>b.priority-a.priority);
+    setTickets(t);
+  },[data]);
+
+
+  // Initialize Leaflet map
+  useEffect(()=>{
+    if(!mapRef.current||mapInst.current)return;
+    const map=L.map(mapRef.current,{zoomControl:true,scrollWheelZoom:true}).setView([54.5,-2],5.5);
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{
+      attribution:"OpenStreetMap",maxZoom:18,subdomains:"abcd"
+    }).addTo(map);
+
+    // Add region markers
+    Object.entries(RMETA).forEach(([region,meta])=>{
+      if(!meta.lat)return;
+      const count=rC[region]||0;
+      if(count===0)return;
+      const regionProbs=pL[region]||{};
+      const topProb=Object.entries(regionProbs).sort((a,b)=>b[1]-a[1])[0];
+      const severity=count>n*0.3?"CRITICAL":count>n*0.15?"HIGH":count>n*0.05?"MEDIUM":"LOW";
+      const color=SEV_COLORS[severity];
+      const radius=Math.max(12,Math.min(35,count*3));
+
+      const marker=L.circleMarker([meta.lat,meta.lng],{
+        radius,color,fillColor:color,fillOpacity:0.35,weight:2
+      }).addTo(map);
+
+      marker.bindPopup(`<div style="font-family:Nunito,sans-serif;min-width:180px">
+        <b style="font-size:14px">${region}</b><br/>
+        <span style="font-size:11px;color:#666">${count} responses · ${severity}</span><br/>
+        ${topProb?`<span style="font-size:12px;margin-top:4px;display:block">Top: <b>${topProb[0]}</b> (${topProb[1]})</span>`:""}
+        <span style="font-size:10px;color:#999;display:block;margin-top:4px">${meta.council}</span>
+      </div>`);
+
+      marker.on("click",()=>setSelR(region));
+    });
+
+    // Add area-level markers (smaller)
+    Object.entries(pL).forEach(([area,probs])=>{
+      if(RMETA[area])return; // Skip regions, only do areas
+      // Find parent region for coordinates
+      let parentRegion=null;
+      for(const [reg,areas] of Object.entries(UK)){if(areas.includes(area)){parentRegion=reg;break;}}
+      if(!parentRegion||!RMETA[parentRegion])return;
+      const base=RMETA[parentRegion];
+      // Offset slightly from region center
+      const hash=area.split("").reduce((a,c)=>a+c.charCodeAt(0),0);
+      const lat=base.lat+(hash%7-3)*0.15;
+      const lng=base.lng+((hash*7)%5-2)*0.2;
+      const total=Object.values(probs).reduce((s,v)=>s+v,0);
+      const topP=Object.entries(probs).sort((a,b)=>b[1]-a[1])[0];
+      const col=probColor(topP?.[0],topP?.[1]||0);
+
+      L.circleMarker([lat,lng],{radius:Math.max(6,total*2),color:col,fillColor:col,fillOpacity:0.25,weight:1.5})
+        .addTo(map)
+        .bindPopup(`<div style="font-family:Nunito,sans-serif"><b>${area}</b><br/>${Object.entries(probs).map(([p,c])=>`${p}: ${c}`).join("<br/>")}</div>`);
+    });
+
+    mapInst.current=map;
+    return()=>{map.remove();mapInst.current=null;};
+  },[data]);
+
+
+  // Get reviews for selected problem in selected region
+  const getReviews=(prob,region)=>{
+    return txts.filter(t=>(t.problems||[]).includes(prob)&&(region?t.area===region||Object.keys(UK).find(k=>UK[k].includes(t.area))===region:true)).slice(0,8);
+  };
+
+  return(<div>
+    {/* COLOR LEGEND */}
+    <div style={{display:"flex",gap:12,marginBottom:14,flexWrap:"wrap",alignItems:"center"}}>
+      <span style={{fontSize:11,fontWeight:700,color:"#999"}}>SEVERITY:</span>
+      {Object.entries(SEV_COLORS).map(([k,v])=>(<span key={k} style={{display:"flex",alignItems:"center",gap:4,fontSize:11}}>
+        <span style={{width:10,height:10,borderRadius:"50%",background:v,display:"inline-block"}}/>{k}
+      </span>))}
+      <span style={{fontSize:11,color:"#999",marginLeft:8}}>Threshold: {threshold} responses to raise ticket</span>
+    </div>
+
+    {/* MAP */}
+    <div className="card" style={{padding:0,overflow:"hidden",marginBottom:14}}>
+      <div ref={mapRef} style={{height:420,width:"100%",borderRadius:16}}/>
+    </div>
+
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+      {/* REGION DETAIL */}
+      {selR&&<div className="card" style={{gridColumn:"1/-1"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
+          <div>
+            <h3 className="serif" style={{fontSize:20,marginBottom:4}}>{selR}</h3>
+            <div style={{fontSize:12,color:"#6B6B6B"}}>{RMETA[selR]?.council} · {RMETA[selR]?.news?.join(", ")}</div>
+          </div>
+          <button className="btn ghost sm" onClick={()=>setSelR(null)}>✕</button>
+        </div>
+        {pL[selR]&&<div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:12}}>
+          {Object.entries(pL[selR]).sort((a,b)=>b[1]-a[1]).map(([p,c])=>{
+            const col=probColor(p,c);
+            return(<button key={p} className={`chip ${selProblem===p?"on":""}`} onClick={()=>setSelProblem(selProblem===p?null:p)}
+              style={{borderColor:col,color:selProblem===p?"#fff":col,background:selProblem===p?col:"transparent"}}>{p} ({c})</button>);
+          })}
+        </div>}
+        {/* AI Analysis */}
+        {aiL&&!ai[selR]?<p style={{fontSize:12,color:"#999"}}>Loading analysis…</p>:ai[selR]&&(
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,fontSize:12,lineHeight:1.6,marginBottom:14}}>
+            <div style={{padding:12,borderRadius:10,border:"1px solid rgba(0,0,0,.04)"}}><b>📰 Local context</b><br/>{ai[selR].news}</div>
+            <div style={{padding:12,borderRadius:10,border:"1px solid rgba(0,0,0,.04)"}}><b>🏛️ Council</b><br/>{ai[selR].council}</div>
+            <div style={{padding:12,borderRadius:10,border:"1px solid rgba(0,0,0,.04)"}}><b>🔗 Ecosystem</b><br/>{ai[selR].ecosystem}</div>
+            <div style={{padding:12,borderRadius:10,border:"1px solid rgba(0,0,0,.04)"}}><b>✅</b> {ai[selR].positive}<br/><b>⚠️</b> {ai[selR].negative}<br/><b>Severity: {(ai[selR].severity||"").toUpperCase()}</b></div>
+          </div>
+        )}
+        {/* Reviews for selected problem */}
+        {selProblem&&<div style={{borderTop:"1px solid rgba(0,0,0,.06)",paddingTop:12}}>
+          <p className="label">Responses mentioning "{selProblem}" in {selR}</p>
+          <div style={{maxHeight:300,overflowY:"auto"}}>
+            {getReviews(selProblem,selR).map((r,i)=>(
+              <div key={i} style={{padding:10,borderRadius:8,border:"1px solid rgba(0,0,0,.04)",marginBottom:6,fontSize:12}}>
+                <div className="serif" style={{fontStyle:"italic",lineHeight:1.5}}>"{r.text}"</div>
+                {r.positive&&<div style={{color:"#27AE60",marginTop:4,fontSize:11}}>✅ {r.positive}</div>}
+                <div style={{color:"#999",fontSize:10,marginTop:4}}>Age {r.age} · {r.employment} · {r.area} · {r.rent}</div>
+              </div>
+            ))}
+            {getReviews(selProblem,selR).length===0&&<p style={{color:"#999",fontSize:12}}>No direct quotes for this problem in this region yet.</p>}
+          </div>
+        </div>}
+      </div>}
+
+
+      {/* PROBLEM TICKETS — Auto-generated workflow */}
+      <div className="card" style={{gridColumn:"1/-1"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+          <p className="label" style={{marginBottom:0}}>Problem tickets ({tickets.filter(t=>t.meetsThreshold).length} active / {tickets.length} total)</p>
+          <span style={{fontSize:10,color:"#999"}}>Threshold: {threshold} responses · Auto-raises when crossed</span>
+        </div>
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          {tickets.map((t,i)=>(
+            <div key={t.prob} style={{padding:14,borderRadius:10,border:`1.5px solid ${t.meetsThreshold?probColor(t.prob,t.count):"#E0E0E0"}`,opacity:t.meetsThreshold?1:0.5,background:t.meetsThreshold?"#fff":"#FAFAFA"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6}}>
+                <div style={{display:"flex",alignItems:"center",gap:8}}>
+                  <span style={{width:10,height:10,borderRadius:"50%",background:probColor(t.prob,t.count)}}/>
+                  <span style={{fontWeight:700,fontSize:13}}>{t.prob}</span>
+                  <span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:100,
+                    background:t.severity==="CRITICAL"?"#C0392B":t.severity==="HIGH"?"#E67E22":t.severity==="MEDIUM"?"#F1C40F":"#E0E0E0",
+                    color:t.severity==="LOW"?"#555":"#fff"}}>{t.severity}</span>
+                  {t.meetsThreshold&&<span style={{fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:100,background:"#1A1A1A",color:"#fff"}}>ACTIVE TICKET</span>}
+                  {!t.meetsThreshold&&<span style={{fontSize:10,color:"#999"}}>{t.count}/{threshold} to activate</span>}
+                </div>
+                <span style={{fontSize:11,fontWeight:700}}>Priority: {t.priority}</span>
+              </div>
+              {/* KPIs row */}
+              <div style={{display:"flex",gap:12,marginBottom:6,flexWrap:"wrap"}}>
+                <span style={{fontSize:10,color:"#555"}}><b>{t.count}</b> reports ({t.pct}%)</span>
+                <span style={{fontSize:10,color:"#555"}}>Solvability: <b>{t.ease}/10</b></span>
+                <span style={{fontSize:10,color:"#555"}}>Market opp: <b>{t.profit}/10</b></span>
+                <span style={{fontSize:10,color:"#555"}}>Regions: <b>{t.regions.length}</b></span>
+              </div>
+              {/* Where it appears */}
+              <div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:4}}>
+                {t.regions.slice(0,6).map(r=>(<span key={r.loc} style={{fontSize:10,padding:"2px 8px",borderRadius:100,background:"rgba(0,0,0,.04)"}}>{r.loc} ({r.count})</span>))}
+              </div>
+              {/* Proposed solutions from survey */}
+              {t.solutions.length>0&&<div style={{marginTop:6,paddingTop:6,borderTop:"1px solid rgba(0,0,0,.04)"}}>
+                <span style={{fontSize:10,fontWeight:700,color:"#27AE60"}}>PROPOSED SOLUTIONS:</span>
+                {t.solutions.map((s,j)=><div key={j} style={{fontSize:11,color:"#555",marginTop:2}}>• {s.slice(0,120)}</div>)}
+              </div>}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ALL LOCATIONS */}
+      <div className="card" style={{gridColumn:"1/-1"}}><p className="label">All locations</p>
+        <div style={{maxHeight:350,overflowY:"auto"}}>{Object.entries(pL).sort((a,b)=>Object.values(b[1]).reduce((s,v)=>s+v,0)-Object.values(a[1]).reduce((s,v)=>s+v,0)).map(([loc,probs])=>(
+          <div key={loc} style={{marginBottom:10}}><span style={{fontWeight:700,fontSize:13}}>{loc}</span>
+            <div style={{display:"flex",flexWrap:"wrap",gap:4,marginTop:3}}>
+              {Object.entries(probs).sort((a,b)=>b[1]-a[1]).map(([p,c])=>{
+                const col=probColor(p,c);
+                return(<span key={p} style={{fontSize:10,padding:"3px 10px",borderRadius:100,border:`1px solid ${col}40`,color:col,fontWeight:600}}>{p} ({c})</span>);
+              })}
+            </div>
+          </div>))}</div>
+      </div>
+    </div>
+  </div>);
+}
+
 
 /* ═ COMPONENTS ═ */
 function Chips({items,sel,set}){return(<div style={{display:"flex",flexWrap:"wrap",gap:6}}>{items.map(v=>(<button key={v} className={`chip ${sel===v?"on":""}`} onClick={()=>set(v)}>{v}</button>))}</div>)}
