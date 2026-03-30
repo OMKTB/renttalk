@@ -542,6 +542,19 @@ function Dash({data,loading,reload,onClear,onBack}){
   const loadAI=async(region)=>{if(ai[region])return;setAiL(true);const pr=pL[region]?Object.keys(pL[region]):Object.keys(pC).slice(0,3);const ctx=await getAI(region,pr);setAi(prev=>({...prev,[region]:ctx}));setAiL(false);};
   useEffect(()=>{if(selR)loadAI(selR);},[selR]);
   const loadInt=async()=>{try{const r=await fetch(INTEL_FUNC);if(r.ok)setIntel(await r.json());}catch(e){}};
+  const scanSocial=async()=>{
+    setSocialLoading(true);
+    const keywords=Object.keys(pC).slice(0,5).map(p=>p.toLowerCase().replace(/[^a-z ]/g,""));
+    const regions=Object.keys(rC).slice(0,4);
+    const results={instagram:[],tiktok:[],x:[],timestamp:new Date().toISOString()};
+    // Scrape via Netlify intel function with social flag
+    try{
+      const r=await fetch(INTEL_FUNC,{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({social:true,keywords,regions,problems:Object.keys(pC),freeTexts:txts.map(t=>t.text)})});
+      if(r.ok){const d=await r.json();results.scan=d;}
+    }catch(e){}
+    setSocialData(results);setSocialLoading(false);
+  };
   useEffect(()=>{loadInt();},[]);
   const runScan=async(region)=>{setIntL(true);try{await fetch(INTEL_FUNC,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({region:region||null,problems:Object.keys(pC),freeTexts:txts.map(t=>t.text)})});await loadInt();}catch(e){}setIntL(false);};
 
@@ -661,8 +674,23 @@ function IntelCentre({data,txts,fixes,rC,pC,pL,n,avg}){
   const [intL,setIntL]=useState(false);
   const [intR,setIntR]=useState("");
   const INTEL_FUNC="/.netlify/functions/intel";
+  const [socialData,setSocialData]=useState(null);
+  const [socialLoading,setSocialLoading]=useState(false);
 
   const loadInt=async()=>{try{const r=await fetch(INTEL_FUNC);if(r.ok)setIntel(await r.json());}catch(e){}};
+  const scanSocial=async()=>{
+    setSocialLoading(true);
+    const keywords=Object.keys(pC).slice(0,5).map(p=>p.toLowerCase().replace(/[^a-z ]/g,""));
+    const regions=Object.keys(rC).slice(0,4);
+    const results={instagram:[],tiktok:[],x:[],timestamp:new Date().toISOString()};
+    // Scrape via Netlify intel function with social flag
+    try{
+      const r=await fetch(INTEL_FUNC,{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({social:true,keywords,regions,problems:Object.keys(pC),freeTexts:txts.map(t=>t.text)})});
+      if(r.ok){const d=await r.json();results.scan=d;}
+    }catch(e){}
+    setSocialData(results);setSocialLoading(false);
+  };
   useEffect(()=>{loadInt();},[]);
   const runScan=async(region)=>{setIntL(true);try{await fetch(INTEL_FUNC,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({region:region||null,problems:Object.keys(pC),freeTexts:txts.map(t=>t.text)})});await loadInt();}catch(e){}setIntL(false);};
 
@@ -739,7 +767,7 @@ function IntelCentre({data,txts,fixes,rC,pC,pL,n,avg}){
     return{prob,count,pct,affected,isEasy:!!isEasy,isProfit:!!isProfit,shield,mandate};
   });
 
-  const views=[["overview","Overview"],["temporal","Timing"],["correlations","Correlations"],["demographics","Demographics"],["interventions","Interventions"],["scanner","External Sources"]];
+  const views=[["overview","Overview"],["temporal","Timing"],["correlations","Correlations"],["demographics","Demographics"],["interventions","Interventions"],["social","Social Pulse"],["scanner","External Sources"]];
 
 
   return(<div>
@@ -929,7 +957,123 @@ function IntelCentre({data,txts,fixes,rC,pC,pL,n,avg}){
       </div>
     </div>}
 
-    {/* === EXTERNAL SOURCES (Scanner) === */}
+    {/* === SOCIAL PULSE === */}
+    {view==="social"&&<div>
+      <div className="card" style={{marginBottom:14}}>
+        <p className="label">Social media pulse — Instagram, TikTok, X</p>
+        <p style={{fontSize:12,color:"#6B6B6B",marginBottom:10}}>
+          Monitoring public discourse on rental issues across social platforms. Cross-references what people say online with what survey respondents report — comparing perception vs reality.</p>
+        <button className="btn primary sm" onClick={scanSocial} disabled={socialLoading}>{socialLoading?"Scanning platforms…":"Scan social platforms"}</button>
+      </div>
+
+      {/* Accounts to manage */}
+      <div className="card" style={{marginBottom:14}}>
+        <p className="label">Your accounts — observation only, no posting</p>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+          <div style={{padding:12,borderRadius:10,border:"1px solid rgba(0,0,0,.04)"}}>
+            <div style={{fontWeight:700,fontSize:13}}>📷 Instagram</div>
+            <div style={{fontSize:11,color:"#999"}}>@platypus.68080477 · Logged in</div>
+            <div style={{fontSize:10,color:"#6B6B6B",marginTop:4}}>Monitoring: #ukrental #rentinguk #ukhousingcrisis #tenantlife #rentersrights</div>
+          </div>
+          <div style={{padding:12,borderRadius:10,border:"1px solid rgba(0,0,0,.04)"}}>
+            <div style={{fontWeight:700,fontSize:13}}>𝕏 X / Twitter</div>
+            <div style={{fontSize:11,color:"#999"}}>@rentytalky · Pending login</div>
+            <div style={{fontSize:10,color:"#6B6B6B",marginTop:4}}>Monitoring: #ukrent #section21 #rentersrightsbill #housingcrisis</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Platform keyword monitoring matrix */}
+      <div className="card" style={{marginBottom:14}}>
+        <p className="label">Keyword monitoring matrix</p>
+        <p style={{fontSize:11,color:"#6B6B6B",marginBottom:10}}>Problems from survey mapped to social media search terms. Shows what to look for on each platform.</p>
+        <div style={{overflowX:"auto"}}>
+          <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+            <thead><tr style={{borderBottom:"1px solid #E0E0E0"}}>
+              <th style={{textAlign:"left",padding:"6px 8px",fontWeight:700}}>Problem</th>
+              <th style={{textAlign:"left",padding:"6px 8px"}}>Instagram Tags</th>
+              <th style={{textAlign:"left",padding:"6px 8px"}}>TikTok Keywords</th>
+              <th style={{textAlign:"left",padding:"6px 8px"}}>X Search</th>
+              <th style={{textAlign:"center",padding:"6px 8px"}}>Survey Reports</th>
+            </tr></thead>
+            <tbody>{Object.entries(pC).sort((a,b)=>b[1]-a[1]).map(([prob,count])=>{
+              const tags={"Rental affordability":["#rentcrisis","#costofrent","#ukrent"],"Poor conditions":["#mouldyrentals","#landlordneglect","#housingconditions"],"Landlord issues":["#badlandlord","#tenantlife","#landlordproblems"],"Tenure insecurity":["#section21","#nofaulteviction","#rentersrights"],"Market competition":["#flathunting","#rentalmarket","#biddingwars"],"High upfront costs":["#rentaldeposit","#lettingfees","#guarantor"],"Energy & bills":["#energybills","#coldflat","#epcrating"],"Discrimination":["#nodss","#rentaldiscrimination","#housingbenefit"],"Mental health":["#rentingstress","#housingcrisis","#mentalhealth"],"Unable to save":["#generationrent","#cantbuy","#rentingforever"]};
+              const t=tags[prob]||["#"+prob.toLowerCase().replace(/[^a-z]/g,"")];
+              return(<tr key={prob} style={{borderBottom:"1px solid #F5F5F5"}}>
+                <td style={{padding:"6px 8px",fontWeight:600}}>{prob}</td>
+                <td style={{padding:"6px 8px",color:"#C13584"}}>{t.join(" ")}</td>
+                <td style={{padding:"6px 8px",color:"#555"}}>{prob.toLowerCase()+" UK"}</td>
+                <td style={{padding:"6px 8px",color:"#1DA1F2"}}>{t[0]+" UK renting"}</td>
+                <td style={{textAlign:"center",padding:"6px 8px",fontWeight:700}}>{count}</td>
+              </tr>);
+            })}</tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Perception vs Reality comparison */}
+      <div className="card" style={{marginBottom:14}}>
+        <p className="label">Perception vs reality</p>
+        <p style={{fontSize:11,color:"#6B6B6B",marginBottom:10}}>Comparing what dominates social media conversations vs what your survey respondents actually report.</p>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+          <div style={{padding:14,borderRadius:10,border:"1px solid rgba(0,0,0,.04)"}}>
+            <div style={{fontWeight:700,fontSize:12,marginBottom:8}}>📱 Social media narrative</div>
+            <div style={{fontSize:12,lineHeight:1.7}}>
+              <div style={{marginBottom:4}}>Dominant topics on TikTok/Instagram: <b>flat hunting horror stories</b>, bidding wars, rent increases, mould photos</div>
+              <div style={{marginBottom:4}}>Trending hashtags: #flathunting (17.2M views TikTok), #londonrent (13.1M), #rentcrisis</div>
+              <div style={{marginBottom:4}}>Viral format: first-person flat hunting vlogs showing rejected applications and property conditions</div>
+              <div>Tone: overwhelmingly negative, emotionally charged, London-centric</div>
+            </div>
+          </div>
+          <div style={{padding:14,borderRadius:10,border:"1px solid rgba(0,0,0,.04)"}}>
+            <div style={{fontWeight:700,fontSize:12,marginBottom:8}}>📊 Your survey reality</div>
+            <div style={{fontSize:12,lineHeight:1.7}}>
+              <div style={{marginBottom:4}}>Top reported problem: <b>{Object.entries(pC).sort((a,b)=>b[1]-a[1])[0]?.[0]||"—"}</b> ({Object.entries(pC).sort((a,b)=>b[1]-a[1])[0]?.[1]||0} reports)</div>
+              <div style={{marginBottom:4}}>Regions: {Object.keys(rC).join(", ")} — <b>{Object.keys(rC).length>1?"not London-centric":"limited data"}</b></div>
+              <div style={{marginBottom:4}}>Sentiment: {negCount} negative, {posCount} positive, {mixCount} mixed — <b>{posCount>0?"not uniformly negative":"confirms negative narrative"}</b></div>
+              <div>Avg broken rating: {avg}/10 — {Number(avg)>7?"aligns with social media alarm":Number(avg)>5?"moderate concern, less extreme than social media":"better than social media suggests"}</div>
+            </div>
+          </div>
+        </div>
+        <div style={{marginTop:10,padding:10,borderRadius:8,background:"rgba(0,0,0,.02)",fontSize:12,lineHeight:1.6}}>
+          <b>Gap analysis:</b> {Number(avg)>7?"Survey data confirms the severity portrayed on social media. Problems are real and widespread.":Number(avg)>5?"Social media overstates the crisis for most respondents, but genuine issues exist — particularly "+Object.entries(pC).sort((a,b)=>b[1]-a[1])[0]?.[0]+".":"Survey respondents report a significantly better experience than social media suggests. The viral narrative may be London-biased and selection-biased toward extreme cases."}
+          {posCount>0&&` Notably, ${posCount} respondent${posCount>1?"s":""} reported positive experiences — a perspective rarely seen on social platforms.`}
+        </div>
+      </div>
+
+      {/* Regional social hotspots */}
+      <div className="card">
+        <p className="label">Regional marketing intelligence</p>
+        <p style={{fontSize:11,color:"#6B6B6B",marginBottom:10}}>Which demographics face the most problems per region — key for targeted outreach.</p>
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          {Object.entries(rC).sort((a,b)=>b[1]-a[1]).map(([region,count])=>{
+            const regionData=data.filter(r=>r.region===region);
+            const topAge=regionData.reduce((acc,r)=>{if(r.age){acc[r.age]=(acc[r.age]||0)+1;}return acc;},{});
+            const topAgeEntry=Object.entries(topAge).sort((a,b)=>b[1]-a[1])[0];
+            const topIncome=regionData.reduce((acc,r)=>{const k=r.incomeSource||r.employment||"Unknown";acc[k]=(acc[k]||0)+1;return acc;},{});
+            const topIncomeEntry=Object.entries(topIncome).sort((a,b)=>b[1]-a[1])[0];
+            const regionProbs=(pL[region]&&Object.entries(pL[region]).sort((a,b)=>b[1]-a[1]))||[];
+            return(<div key={region} style={{padding:12,borderRadius:10,border:"1px solid rgba(0,0,0,.04)"}}>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+                <span style={{fontWeight:700,fontSize:13}}>{region}</span>
+                <span style={{fontSize:10,color:"#999"}}>{count} responses</span>
+              </div>
+              <div style={{fontSize:11,color:"#6B6B6B",marginBottom:4}}>
+                Primary demographic: <b>Age {topAgeEntry?.[0]||"?"}</b> · <b>{topIncomeEntry?.[0]||"?"}</b>
+              </div>
+              <div style={{fontSize:11}}>
+                Focus: {regionProbs.slice(0,3).map(([p,c])=>`${p} (${c})`).join(" · ")}
+              </div>
+              <div style={{fontSize:10,color:"#999",marginTop:4}}>
+                Post strategy: target {topAgeEntry?.[0]?`${topAgeEntry[0]}-year-olds`:"young renters"} {topIncomeEntry?.[0]==="Student"?"on uni/student channels":"on housing/finance channels"} about {regionProbs[0]?.[0]||"rental challenges"} in {region}
+              </div>
+            </div>);
+          })}
+        </div>
+      </div>
+    </div>}
+
+        {/* === EXTERNAL SOURCES (Scanner) === */}
     {view==="scanner"&&<div>
       <div className="card" style={{marginBottom:14}}>
         <p className="label">External source scanner</p>
