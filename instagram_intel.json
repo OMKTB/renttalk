@@ -149,9 +149,152 @@
         "negative": 2,
         "neutral": 16
       }
+    },
+    {
+      "timestamp": "2026-03-30T16:21:52.196933",
+      "hashtag_results": {},
+      "news_results": [
+        {
+          "title": "Why are rents so high and will they keep going up in 2026? - Big Issue",
+          "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxOYkpRNVQyVFNrVk5uNlVZTFE1NFJuSExReEVyWG9ISV9fZEIwNG5YLU9OTFdTNFNweWFyem91T1BpY1ZacGNHeFU2OVNaZGIteml3Wi1XVW5QN25yOUZnb3JLVkJONkh2TEpReXZfd242Nmo4b014YmdjNEtJWmdLWFlwMnotNGNwMXJFV2MxVXhPT0tQTkowdC1FaG9qa0JybGlDRnEzanZKUDBYV29YTWx4REpTLTRzcWNydmV0MA?oc=5",
+          "date": "Wed, 25 Mar 2026 07:00:00 GMT",
+          "query": "UK rent crisis"
+        },
+        {
+          "title": "Rents reach highest-ever level relative to earnings, driven by lack of housing supply - Sky News",
+          "url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxQdGc1Y0EtZlZreHJZeXBIVXdtNUxXcFVBVkNQS21lNTZtVkxVMXdQeVhuOEJ4Nlo5TVk1RlFoNEFfVGdfNXVtSzdLTWxyN0ViU2s5cGFCM1laU1N0cmtQVTh0SUdGcEhWYjQzSmFRTTVLTV93emRfWW9FOFVtNlZWdDd6dHhfakhHOWdqOHlNTlcyaUVRbFVIRjUtbjZZRy11V1pJY1FwSXRBLVBjcjF6amUyUGJITDYycEhpSQ?oc=5",
+          "date": "Thu, 26 Mar 2026 01:57:43 GMT",
+          "query": "UK rent crisis"
+        },
+        {
+          "title": "UK housing costs rise 41% over five years for renters and owners, study shows - The Guardian",
+          "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxQMkRpWm16QVJBWXl2Qk5neThNNDY2UjQ5dkNmMkZaRzFGUW0tVmtaNjFka3l2YWJLdEdrYWV2V1lwOUFYZjhEUVByZG9hYk16VnZHYUEweERHMDBkSjFtX1RtNjU4aVl6MFVQb3BRaWFzcS10V0k4WGs3WFFkWlh2UGdoY0Z3cEplXzZQYTZuUUZ2MC1DdFBqQzN5YjB2NzJt?oc=5",
+          "date": "Sun, 15 Mar 2026 07:00:00 GMT",
+          "query": "UK rent crisis"
+        },
+        {
+          "title": "Rent controls are coming to the UK - but they're not a guaranteed win for tenants - BBC",
+          "url": "https://news.google.com/rss/articles/CBMiXEFVX3lxTFBqZ05PcVJIdVZyZGg1c29CNkZXMmktNVFKTmliOENTejd5Zl9kR0RWaFNTV2FfZUhLbWowQnl0bGJXdkZtektMSEJ6SEZockxxZHllUnhuQ2d2NmZv?oc=5",
+          "date": "Fri, 06 Feb 2026 08:00:00 GMT",
+          "query": "UK rent crisis"
+        },
+        {
+          "title": "Britain\u2019s housing crisis is no longer about the young - Estate Agent Today",
+          "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxObDNTY0YyOW5vNEFFZjZYLUhDZmh4SXBTUW9ld3BYbXBobjMzamZ0dnIzaUJtOUhkUUpDUV9BaDJuelkwYXFaU2tzRXphdkVRSG8tS2Fzb2JrSDAwQkRtamFwaVZpdlotSHByQlhuWk9xdHk2NUk5MzlYdFpTS29pYVdFNnk4UUowdzhjOGs1aW9HaWl5YTBNYkxPeHFtMmptVDJQSGFweTU?oc=5",
+          "date": "Sat, 21 Feb 2026 08:00:00 GMT",
+          "query": "UK rent crisis"
+        },
+        {
+          "title": "Landlords now to fulfil new legal duty for Renters\u2019 Rights Act - GOV.UK",
+          "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxOeEpPYnpKM2N2VERyM0NEandmMmIySnR3YmJmYi1za1JjM2prWDFyQ1l2ZzI4WlBJLXhYYUF6WTI0YUY2OURBUm0ySHhkX212TVJnVGh1U21ZWFJSZ2sxek9BZ1B3WnM3WnNSY2RlYzhDQ3lLUmlWN29mblpQUzZiRVNONWhHSGoyR003SnYwWFB5UWFmZFRPbnh0Z1c?oc=5",
+          "date": "Fri, 20 Mar 2026 07:00:00 GMT",
+          "query": "UK landlord tenant"
+        },
+        {
+          "title": "\ud83d\udece\ufe0f Landlords, here are 6 ways to get yourself ready for new renters\u2019 rights - GOV.UK blogs",
+          "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxNT0k5aTJ0WTEtcDBVVVdkV2NOOUdPMmY4Tk9QNWg4RENzcENXczkxTjh5REdxQVVJZmtIbUhNcDYwdUJUdUpBQ3FsQ29lN3FSaWZTeFZqWGRPYzNON0JYYjV0UG55TXhnQ1JMU2Qxd2pmRHgzdkZuWnY0MnU0d2REY3VPbmxvcWk5eTVvN1hHYWNjQWNCcmdUWlc5OHFrSHBiVjNWT0ZYbkJoQUxLOVJZb2VHWDJHWE90Z1dRUFF4RnRCTlpHcUpkS3pvQjBPaGot?oc=5",
+          "date": "Fri, 20 Mar 2026 07:00:00 GMT",
+          "query": "UK landlord tenant"
+        },
+        {
+          "title": "Glasgow arts hub tenants condemn \u2018unsustainable\u2019 rent rises by landlord - The Guardian",
+          "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxQWFdUaWE2YVBiSHRTWUxJaFBhTnRKeTVFT2dkbmpSODJWNzE2QWcwZU01dEZYMkhrNHlLeUVXaHdEdkw2WldEYXRWZ3o5X2JmcEpHVGpaYWdmWDhFUmd4cjgwLW82VjBKTElUYTFGUGVLRkk4X01MdWtlTVdqMzNJbjBKbHFDSUQyeEpESkdncHlhRTZQdF8zbUlpQXBHTjR6aXktV0Jn?oc=5",
+          "date": "Mon, 30 Mar 2026 08:06:00 GMT",
+          "query": "UK landlord tenant"
+        },
+        {
+          "title": "Renting is changing: Here\u2019s what you need to know - West Midlands Combined Authority",
+          "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxOT3FkelZGbUNQaXg3OGNjYjAyeUNWOFNYLWlvUDQ3dlF0S3F2T1FSNzN3U1dSZXI0dG9uLWJHX3FGNU1KUEJWbDJHMWw2LTJQR1JKajZsaVZoUkJteFJBLVRVZFBKNzFQQy1CYlJuOGpfNXFVTDBXdGkyYlFsTEVFRmtzUEd2M0pVbjR0OWp3b3RwSWR6QlJUal9WeERmLUlLa0piR19pYkk1WUItbGxoMTJNQmY?oc=5",
+          "date": "Fri, 20 Mar 2026 00:52:12 GMT",
+          "query": "UK landlord tenant"
+        },
+        {
+          "title": "Why are rents so high and will they keep going up in 2026? - Big Issue",
+          "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxOYkpRNVQyVFNrVk5uNlVZTFE1NFJuSExReEVyWG9ISV9fZEIwNG5YLU9OTFdTNFNweWFyem91T1BpY1ZacGNHeFU2OVNaZGIteml3Wi1XVW5QN25yOUZnb3JLVkJONkh2TEpReXZfd242Nmo4b014YmdjNEtJWmdLWFlwMnotNGNwMXJFV2MxVXhPT0tQTkowdC1FaG9qa0JybGlDRnEzanZKUDBYV29YTWx4REpTLTRzcWNydmV0MA?oc=5",
+          "date": "Wed, 25 Mar 2026 07:00:00 GMT",
+          "query": "UK landlord tenant"
+        },
+        {
+          "title": "Millions of tenants safe from black mould through Awaab\u2019s Law - GOV.UK",
+          "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxNZGdwcEU1SDk1NVVpNy1rMVRvdHhJYm44dEhxa3JaNF9GaDZXSmtmcXdEVm92QloxU0Q5MzdrSkdlNWx6MGQ2TUY0ZS1YaEg5dFZSZEFyNzFEVWdOQk1mQkhfMzRrZWM5VW9RbVFhWUpCNFQtc2hkT0pLeTJiUHpYZzQ3dkl6cDl5bTR5bHJkV2tGSFBySTJCNENWSQ?oc=5",
+          "date": "Mon, 27 Oct 2025 07:00:00 GMT",
+          "query": "UK housing mould"
+        },
+        {
+          "title": "Awaab\u2019s Law: Why so many UK homes still have a mould problem - BBC",
+          "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE9idGF5OGFEaWlmT3g0UXNaVkktRHNNNGN3WjEyTXBSaHFuakw3bmN0VkpLZUpwVUNxVDlMVl94c1pLZG9jYmxFTHZCT2RlUkVON05BdVozalE1dw?oc=5",
+          "date": "Sun, 26 Oct 2025 07:00:00 GMT",
+          "query": "UK housing mould"
+        },
+        {
+          "title": "My \u00a31,600- a-month flat was covered in mould, but my landlord did nothing - The i Paper",
+          "url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxQUjM5NWVvZFV3TDAtXzRrZlBDcXpTMjBQVDlKRWJrQ3NWcGZ3MGZpRUhwOUkwLU5wdmJzcEwteVljUi1DdGE5WHRLY18yelBrNW1BeElZUWpYOXR5ZXlEeVd2R3JwYjZvOVBzTE40cHp2akQ2cm9sZ1BzRmRBVjBsUEdxQQ?oc=5",
+          "date": "Thu, 04 Dec 2025 08:00:00 GMT",
+          "query": "UK housing mould"
+        },
+        {
+          "title": "Explainer: everything you need to know about the new Renters\u2019 Rights Act - GOV.UK blogs",
+          "url": "https://news.google.com/rss/articles/CBMiswFBVV95cUxPTGptQlFHTkVfcE81QkFIV0trR1hmQTdGbmpWVGoxdFYxanhwWTZoQldtbFVyOEFiclp0NEdnMTZmeFVTOGFmZVdxWjBRbU9MVUhjaFc1bm8tV0NOWFZWbVlucGJBYkdrSklMUi1EOTVlZTZwb0ktZnFHSnpKU2laZDh1enVLWWk3elNYemlnd2ZPMDdRekJLQ3kwZXhaN0VnMDRSUVJQNGVCc1RPaHdQWXppNA?oc=5",
+          "date": "Wed, 19 Nov 2025 08:00:00 GMT",
+          "query": "UK housing mould"
+        },
+        {
+          "title": "Why Awaab\u2019s Law marks a turning point for UK landlords - Landlord Today",
+          "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxQWlh4alREQ0k4U0kwRzA2akx5TUFfVWdnWHJCSW96a29VZ3RSMXJZN3c2bG1rZ01Zc2t3amhwRVdaMW5fSTZ2dzhtc2w1UWdXX1Y2ZThidFZaUW54RjhsalQ0bjBISFlQTXZjZjlVWGtqemxKRWliTF9Ed1NIRDRKY1g4Z3l0d2xPNFUtTFlTYXVPaHlwQURLaDZ2VndpSzBSdXN1bHh3?oc=5",
+          "date": "Sat, 25 Oct 2025 07:00:00 GMT",
+          "query": "UK housing mould"
+        },
+        {
+          "title": "Renting is changing: Here\u2019s what you need to know - West Midlands Combined Authority",
+          "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxOT3FkelZGbUNQaXg3OGNjYjAyeUNWOFNYLWlvUDQ3dlF0S3F2T1FSNzN3U1dSZXI0dG9uLWJHX3FGNU1KUEJWbDJHMWw2LTJQR1JKajZsaVZoUkJteFJBLVRVZFBKNzFQQy1CYlJuOGpfNXFVTDBXdGkyYlFsTEVFRmtzUEd2M0pVbjR0OWp3b3RwSWR6QlJUal9WeERmLUlLa0piR19pYkk1WUItbGxoMTJNQmY?oc=5",
+          "date": "Fri, 20 Mar 2026 00:52:12 GMT",
+          "query": "renters rights bill 2026"
+        },
+        {
+          "title": "Why are rents so high and will they keep going up in 2026? - Big Issue",
+          "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxOYkpRNVQyVFNrVk5uNlVZTFE1NFJuSExReEVyWG9ISV9fZEIwNG5YLU9OTFdTNFNweWFyem91T1BpY1ZacGNHeFU2OVNaZGIteml3Wi1XVW5QN25yOUZnb3JLVkJONkh2TEpReXZfd242Nmo4b014YmdjNEtJWmdLWFlwMnotNGNwMXJFV2MxVXhPT0tQTkowdC1FaG9qa0JybGlDRnEzanZKUDBYV29YTWx4REpTLTRzcWNydmV0MA?oc=5",
+          "date": "Wed, 25 Mar 2026 07:00:00 GMT",
+          "query": "renters rights bill 2026"
+        },
+        {
+          "title": "Major rental changes coming May 2026: Renters\u2019 Rights Act and what it means for you - University of Liverpool",
+          "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxONjhpNk1kYmVXNnJPS3lEbVVRcDlXWGZ5dFhPdTF6VzhGSmEyck5ROHRWb2JSZnpvbElld3ExOEJ5SlE1RldQa0pFSE5CMWd3aGh2bXY3eHFkXzUtNDBDQUlGNmRlb291aTEzRmZ2TDY0dFJkME1XR2R2allmVjEwSjVDMVBZQ2tSUndEOGlLbVVuNXlsNW1GRi1UT2FxOElwV21SdDZ0N3B5UE83NXN6OVljaVZpMHE3X21ldV9aWQ?oc=5",
+          "date": "Mon, 16 Mar 2026 10:03:00 GMT",
+          "query": "renters rights bill 2026"
+        },
+        {
+          "title": "The Renters\u2019 Rights Act \u2013 find out how this could affect you - Bournemouth University",
+          "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxOODRWVHlHUDhTeTFxNlBhV1hlcnFvc1hmWDRYdUNuZVpkc3dNemVoWTY5N2xVNk56R2dBaFM4ZVVKdC1WVmVRUXFCNDI2VldrQTJlM09hY3drR3dnVDZCMTRJNmxTOEdZc1NrdFRRekFSMWVGNXZFeTdNQWNSYnFMT3dTLWRVM3pNSVMwWHNXdll1blB4MVBrejRn?oc=5",
+          "date": "Fri, 20 Mar 2026 07:00:00 GMT",
+          "query": "renters rights bill 2026"
+        },
+        {
+          "title": "Home | New Renters Rights Act to bring first reforms in 40 years - North Norfolk District Council",
+          "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxPZ2lHdHJjQjRvM1hScTE2aGpwdUVuRVU2TWlfNExBajluNzRJZnV5eUJRRWY4bkdpUXBJVXItM2dNWDc2N29oTUhJdWRxcXRLMmFES0FQVjhtdGdMWFBTbTRkWmVtbkdCVHd1cjNrajBibXIxdzVvRzdxeUx1eDhwY1hJM2lVTlY3SGhRUHdwMV9iUDc0ZFJ5S0Z5NmVwQXJzOGRWVmZpazMtbF9lWHc?oc=5",
+          "date": "Thu, 29 Jan 2026 08:00:00 GMT",
+          "query": "renters rights bill 2026"
+        }
+      ],
+      "locations_detected": [
+        {
+          "city": "Glasgow",
+          "source": "Glasgow arts hub tenants condemn \u2018unsustainable\u2019 rent rises by landlord - The Gu",
+          "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxQWFdUaWE2YVBiSHRTWUxJaFBhTnRKeTVFT2dkbmpSODJWNzE2QWcwZU01dEZYMkhrNHlLeUVXaHdEdkw2WldEYXRWZ3o5X2JmcEpHVGpaYWdmWDhFUmd4cjgwLW82VjBKTElUYTFGUGVLRkk4X01MdWtlTVdqMzNJbjBKbHFDSUQyeEpESkdncHlhRTZQdF8zbUlpQXBHTjR6aXktV0Jn?oc=5"
+        },
+        {
+          "city": "Liverpool",
+          "source": "Major rental changes coming May 2026: Renters\u2019 Rights Act and what it means for ",
+          "url": "https://news.google.com/rss/articles/CBMivwFBVV95cUxONjhpNk1kYmVXNnJPS3lEbVVRcDlXWGZ5dFhPdTF6VzhGSmEyck5ROHRWb2JSZnpvbElld3ExOEJ5SlE1RldQa0pFSE5CMWd3aGh2bXY3eHFkXzUtNDBDQUlGNmRlb291aTEzRmZ2TDY0dFJkME1XR2R2allmVjEwSjVDMVBZQ2tSUndEOGlLbVVuNXlsNW1GRi1UT2FxOElwV21SdDZ0N3B5UE83NXN6OVljaVZpMHE3X21ldV9aWQ?oc=5"
+        }
+      ],
+      "sentiment_signals": {
+        "positive": 3,
+        "negative": 1,
+        "neutral": 16
+      }
     }
   ],
   "posts": [],
   "accounts_followed": [],
-  "last_scan": "2026-03-30T16:06:27.044570"
+  "last_scan": "2026-03-30T16:21:52.196933"
 }
