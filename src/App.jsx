@@ -252,6 +252,8 @@ async function getAI(region,problems){
 }
 
 /* ═══════════ APP ═══════════ */
+const sr=o=>Object.entries(o).map(([name,value])=>({name,value})).sort((a,b)=>b.value-a.value);
+
 export default function App(){
   const [view,setView]=useState("survey");
   const [pin,setPin]=useState(false);
@@ -673,7 +675,7 @@ function Dash({data,loading,reload,onClear,onBack}){
     const loc=r.area||r.region;if(loc)(r.problems||[]).forEach(p=>{if(!pL[loc])pL[loc]={};pL[loc][p]=(pL[loc][p]||0)+1;});
     if(r.answers)Object.values(r.answers).forEach(a=>{anC[a]=(anC[a]||0)+1;});
   });
-  const sr=o=>Object.entries(o).map(([name,value])=>({name,value})).sort((a,b)=>b.value-a.value);
+  // sr is now global
   const pD=sr(pC),agD=sr(agC),catD=sr(catC);
   const avg=n?(tR/n).toFixed(1):"0";
 
@@ -1009,7 +1011,7 @@ function IntelCentre({data,txts,fixes,rC,pC,pL,n,avg}){
       {/* Guarantor analysis */}
       <div className="card"><p className="label">Access barriers</p>
         <div style={{fontSize:12,lineHeight:1.8,marginTop:8}}>
-          {(()=>{const noG=data.filter(r=>r.hasGuarantor==="No").length;const nonUK=data.filter(r=>r.ukNational==="No").length;const onBen=data.filter(r=>r.incomeSource==="Benefits").length;
+          {(()=>{const noG=(data||[]).filter(r=>r.hasGuarantor==="No").length;const nonUK=(data||[]).filter(r=>r.ukNational==="No").length;const onBen=(data||[]).filter(r=>r.incomeSource==="Benefits").length;
             return(<>
               <div style={{marginBottom:6}}><b>{noG}</b> respondents ({((noG/n)*100).toFixed(0)}%) have <b>no UK guarantor</b> — a major barrier to securing rental properties.</div>
               <div style={{marginBottom:6}}><b>{nonUK}</b> ({((nonUK/n)*100).toFixed(0)}%) are <b>non-UK nationals</b> — facing additional documentation and discrimination hurdles.</div>
@@ -1274,54 +1276,55 @@ function IntelCentre({data,txts,fixes,rC,pC,pL,n,avg}){
 
 /* ═══════════ ANALYSIS DASHBOARD ═══════════ */
 function AnalysisDash({data,pC,pD,rC,reC,iC,agC,rcC,catD,n,avg,o4,txts,fixes}){
+  if(!data||!Array.isArray(data)||data.length===0||n===0)return(<div className="card"><p style={{color:"#999",fontSize:12}}>Loading analysis data...</p></div>);
   const P=["#2C2C2C","#6B6B6B","#999","#CCC","#E0E0E0"];
   // Compute all metrics
   const regions=Object.keys(rC).length;
-  const avgCondition=n>0?(data.reduce((s,r)=>s+(Number(r.conditionRating)||0),0)/n).toFixed(1):"—";
-  const avgLandlord=n>0?(data.reduce((s,r)=>s+(Number(r.landlordRating)||0),0)/n).toFixed(1):"—";
-  const depositIssues=data.filter(r=>r.depositIssue&&r.depositIssue!=="None"&&r.depositIssue!=="No issues").length;
-  const nonUK=data.filter(r=>r.ukNational==="No").length;
-  const noGuarantor=data.filter(r=>r.hasGuarantor==="No").length;
-  const students=data.filter(r=>r.incomeSource==="Student").length;
-  const benefits=data.filter(r=>r.incomeSource==="Benefits").length;
+  const avgCondition=n>0?((data||[]).reduce((s,r)=>s+(Number(r.conditionRating)||0),0)/(n||1)).toFixed(1):"—";
+  const avgLandlord=n>0?((data||[]).reduce((s,r)=>s+(Number(r.landlordRating)||0),0)/(n||1)).toFixed(1):"—";
+  const depositIssues=(data||[]).filter(r=>r.depositIssue&&r.depositIssue!=="None"&&r.depositIssue!=="No issues").length;
+  const nonUK=(data||[]).filter(r=>r.ukNational==="No").length;
+  const noGuarantor=(data||[]).filter(r=>r.hasGuarantor==="No").length;
+  const students=(data||[]).filter(r=>r.incomeSource==="Student").length;
+  const benefits=(data||[]).filter(r=>r.incomeSource==="Benefits").length;
   const posExp=txts.filter(r=>r.positive&&r.positive.length>5).length;
 
   // Rent by region averages (map bracket to midpoint)
   const rentMid={"Under £400":350,"£400–£600":500,"£600–£800":700,"£800–£1,000":900,"£1,000–£1,500":1250,"£1,500–£2,000":1750,"£2,000+":2200};
   const rentByRegion={};
-  data.forEach(r=>{if(r.region&&r.rent){const reg=r.region;if(!rentByRegion[reg])rentByRegion[reg]={total:0,count:0};rentByRegion[reg].total+=rentMid[r.rent]||800;rentByRegion[reg].count++;}});
+  (data||[]).forEach(r=>{if(r.region&&r.rent){const reg=r.region;if(!rentByRegion[reg])rentByRegion[reg]={total:0,count:0};rentByRegion[reg].total+=rentMid[r.rent]||800;rentByRegion[reg].count++;}});
   const regionRentData=Object.entries(rentByRegion).map(([reg,v])=>({name:reg,avg:Math.round(v.total/v.count),count:v.count})).sort((a,b)=>b.avg-a.avg);
 
   // Income source breakdown
-  const incSrc={};data.forEach(r=>{const k=r.incomeSource||"Unknown";incSrc[k]=(incSrc[k]||0)+1;});
-  const incData=Object.entries(incSrc).sort((a,b)=>b[1]-a[1]).map(([k,v])=>({name:k,value:v}));
+  const incSrc={};(data||[]).forEach(r=>{const k=r.incomeSource||"Unknown";incSrc[k]=(incSrc[k]||0)+1;});
+  const incData=Object.entries(incSrc||{}).sort((a,b)=>b[1]-a[1]).map(([k,v])=>({name:k,value:v}));
 
   // Rent burden heatmap data
   const burdenMap={};
-  data.forEach(r=>{if(r.rent&&r.pctIncome){const key=`${r.rent}|${r.pctIncome}`;burdenMap[key]=(burdenMap[key]||0)+1;}});
+  (data||[]).forEach(r=>{if(r.rent&&r.pctIncome){const key=`${r.rent}|${r.pctIncome}`;burdenMap[key]=(burdenMap[key]||0)+1;}});
 
   // Property type breakdown
-  const propTypes={};data.forEach(r=>{const k=r.propertyType||r.situation||"Unknown";propTypes[k]=(propTypes[k]||0)+1;});
+  const propTypes={};(data||[]).forEach(r=>{const k=r.propertyType||r.situation||"Unknown";propTypes[k]=(propTypes[k]||0)+1;});
   const propData=Object.entries(propTypes).sort((a,b)=>b[1]-a[1]).map(([k,v])=>({name:k,value:v}));
 
   // How found property
-  const foundVia={};data.forEach(r=>{const k=r.howFound||"Unknown";foundVia[k]=(foundVia[k]||0)+1;});
+  const foundVia={};(data||[]).forEach(r=>{const k=r.howFound||"Unknown";foundVia[k]=(foundVia[k]||0)+1;});
   const foundData=Object.entries(foundVia).sort((a,b)=>b[1]-a[1]).map(([k,v])=>({name:k,value:v}));
 
   // Gender breakdown
-  const genders={};data.forEach(r=>{const k=r.gender||"Unknown";genders[k]=(genders[k]||0)+1;});
+  const genders={};(data||[]).forEach(r=>{const k=r.gender||"Unknown";genders[k]=(genders[k]||0)+1;});
 
   // Tenancy lengths
-  const tenLengths={};data.forEach(r=>{const k=r.tenancyLength||"Unknown";tenLengths[k]=(tenLengths[k]||0)+1;});
+  const tenLengths={};(data||[]).forEach(r=>{const k=r.tenancyLength||"Unknown";tenLengths[k]=(tenLengths[k]||0)+1;});
   const tenData=Object.entries(tenLengths).sort((a,b)=>b[1]-a[1]).map(([k,v])=>({name:k,value:v}));
 
   // Condition rating distribution
-  const condDist={};data.forEach(r=>{const k=r.conditionRating||0;condDist[k]=(condDist[k]||0)+1;});
+  const condDist={};(data||[]).forEach(r=>{const k=r.conditionRating||0;condDist[k]=(condDist[k]||0)+1;});
   const condData=Array.from({length:10},(_, i)=>({rating:i+1,count:condDist[i+1]||0}));
 
   // Satisfaction by region
   const satByRegion=regionRentData.map(r=>{
-    const rd=data.filter(d=>d.region===r.name);
+    const rd=(data||[]).filter(d=>d.region===r.name);
     const avgB=rd.reduce((s,d)=>s+(Number(d.brokenRating)||5),0)/(rd.length||1);
     const avgC=rd.reduce((s,d)=>s+(Number(d.conditionRating)||5),0)/(rd.length||1);
     const avgL=rd.reduce((s,d)=>s+(Number(d.landlordRating)||5),0)/(rd.length||1);
@@ -1371,7 +1374,7 @@ function AnalysisDash({data,pC,pD,rC,reC,iC,agC,rcC,catD,n,avg,o4,txts,fixes}){
       {/* INCOME SOURCE */}
       <div className="card">
         <p className="label">Income source</p>
-        <ResponsiveContainer width="100%" height={180}><PieChart><Pie data={incData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} innerRadius={30} label={({name,percent})=>`${name.split(" ")[0]} ${(percent*100).toFixed(0)}%`} style={{fontSize:9,fontFamily:"'Nunito',sans-serif",fill:"#555"}}>{incData.map((_,i)=><Cell key={i} fill={P[i%P.length]}/>)}</Pie><Tooltip/></PieChart></ResponsiveContainer>
+        <ResponsiveContainer width="100%" height={180}><PieChart><Pie data={incData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} innerRadius={30} label={({name,percent})=>`${(name||"").split(" ")[0]} ${((percent||0)*100).toFixed(0)}%`} style={{fontSize:9,fontFamily:"'Nunito',sans-serif",fill:"#555"}}>{incData.map((_,i)=><Cell key={i} fill={P[i%P.length]}/>)}</Pie><Tooltip/></PieChart></ResponsiveContainer>
         <div style={{fontSize:10,color:"#999",textAlign:"center"}}>Students: {students} · Benefits: {benefits}</div>
       </div>
 
@@ -1390,7 +1393,7 @@ function AnalysisDash({data,pC,pD,rC,reC,iC,agC,rcC,catD,n,avg,o4,txts,fixes}){
               <th style={{textAlign:"left",padding:"6px 8px"}}>Regions Affected</th>
             </tr></thead>
             <tbody>{pD.map((p,i)=>{const pct=((p.value/n)*100);const sev=pct>30?"CRITICAL":pct>20?"HIGH":pct>10?"MEDIUM":"LOW";
-              const affectedRegions=Object.entries(rC).filter(([reg])=>data.some(r=>r.region===reg&&(r.problems||[]).includes(p.name))).map(([r])=>r);
+              const affectedRegions=Object.entries(rC).filter(([reg])=>(data||[]).some(r=>r.region===reg&&(r.problems||[]).includes(p.name))).map(([r])=>r);
               return(<tr key={p.name} style={{borderBottom:"1px solid #F5F5F5"}}>
                 <td style={{padding:"8px",fontWeight:600}}>{p.name}</td>
                 <td style={{textAlign:"center",padding:"8px",fontWeight:700}}>{p.value}</td>
@@ -1418,9 +1421,9 @@ function AnalysisDash({data,pC,pD,rC,reC,iC,agC,rcC,catD,n,avg,o4,txts,fixes}){
             </div>
           ))}
           <div style={{fontWeight:700,fontSize:10,color:"#999",marginTop:10,marginBottom:4}}>AGE DISTRIBUTION</div>
-          <ResponsiveContainer width="100%" height={100}><BarChart data={sr(agC).sort((a,b)=>Number(a.name)-Number(b.name))}><XAxis dataKey="name" tick={{fontSize:9}}/><Bar dataKey="value" radius={[2,2,0,0]} fill="#2C2C2C"/></BarChart></ResponsiveContainer>
+          <ResponsiveContainer width="100%" height={100}><BarChart data={(sr(agC||{})||[]).sort((a,b)=>Number(a.name)-Number(b.name))}><XAxis dataKey="name" tick={{fontSize:9}}/><Bar dataKey="value" radius={[2,2,0,0]} fill="#2C2C2C"/></BarChart></ResponsiveContainer>
           <div style={{fontWeight:700,fontSize:10,color:"#999",marginTop:10,marginBottom:4}}>NATIONALITY</div>
-          <div>UK nationals: <b>{data.filter(r=>r.ukNational==="Yes").length}</b> ({n?Math.round(data.filter(r=>r.ukNational==="Yes").length/n*100):0}%)</div>
+          <div>UK nationals: <b>{(data||[]).filter(r=>r.ukNational==="Yes").length}</b> ({n?Math.round((data||[]).filter(r=>r.ukNational==="Yes").length/n*100):0}%)</div>
           <div>Non-UK: <b>{nonUK}</b> ({n?Math.round(nonUK/n*100):0}%)</div>
         </div>
       </div>
@@ -1534,19 +1537,19 @@ function AnalysisDash({data,pC,pD,rC,reC,iC,agC,rcC,catD,n,avg,o4,txts,fixes}){
 
       <div className="card">
         <p className="label">Rent control stance</p>
-        <ResponsiveContainer width="100%" height={160}><PieChart><Pie data={sr(rcC)} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={60} innerRadius={25} label={({name,percent})=>`${name.split(" ")[0]} ${(percent*100).toFixed(0)}%`} style={{fontSize:9,fontFamily:"'Nunito',sans-serif",fill:"#555"}}>{sr(rcC).map((_,i)=><Cell key={i} fill={P[i%P.length]}/>)}</Pie><Tooltip/></PieChart></ResponsiveContainer>
+        <ResponsiveContainer width="100%" height={160}><PieChart><Pie data={(sr(rcC||{})||[])} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={60} innerRadius={25} label={({name,percent})=>`${(name||"").split(" ")[0]} ${((percent||0)*100).toFixed(0)}%`} style={{fontSize:9,fontFamily:"'Nunito',sans-serif",fill:"#555"}}>{(sr(rcC||{})||[]).map((_,i)=><Cell key={i} fill={P[i%P.length]}/>)}</Pie><Tooltip/></PieChart></ResponsiveContainer>
       </div>
 
 
       {/* RENT BRACKETS + AGE */}
       <div className="card">
         <p className="label">Rent brackets</p>
-        <ResponsiveContainer width="100%" height={160}><BarChart data={sr(reC)} layout="vertical" margin={{left:90}}><XAxis type="number" tick={{fontSize:9}}/><YAxis type="category" dataKey="name" width={85} tick={{fontSize:9}}/><Tooltip/><Bar dataKey="value" radius={[0,3,3,0]} fill="#6B6B6B"/></BarChart></ResponsiveContainer>
+        <ResponsiveContainer width="100%" height={160}><BarChart data={(sr(reC||{})||[])} layout="vertical" margin={{left:90}}><XAxis type="number" tick={{fontSize:9}}/><YAxis type="category" dataKey="name" width={85} tick={{fontSize:9}}/><Tooltip/><Bar dataKey="value" radius={[0,3,3,0]} fill="#6B6B6B"/></BarChart></ResponsiveContainer>
       </div>
 
       <div className="card">
         <p className="label">Age distribution</p>
-        <ResponsiveContainer width="100%" height={160}><BarChart data={sr(agC).sort((a,b)=>Number(a.name)-Number(b.name))}><XAxis dataKey="name" tick={{fontSize:9}}/><YAxis tick={{fontSize:9}}/><Tooltip/><Bar dataKey="value" radius={[3,3,0,0]} fill="#2C2C2C"/></BarChart></ResponsiveContainer>
+        <ResponsiveContainer width="100%" height={160}><BarChart data={(sr(agC||{})||[]).sort((a,b)=>Number(a.name)-Number(b.name))}><XAxis dataKey="name" tick={{fontSize:9}}/><YAxis tick={{fontSize:9}}/><Tooltip/><Bar dataKey="value" radius={[3,3,0,0]} fill="#2C2C2C"/></BarChart></ResponsiveContainer>
       </div>
 
       {/* LEGAL LANDSCAPE */}
