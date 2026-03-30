@@ -529,7 +529,7 @@ function Dash({data,loading,reload,onClear,onBack}){
     (r.problems||[]).forEach(p=>{pC[p]=(pC[p]||0)+1;const c=CATS[p]||"General";catC[c]=(catC[c]||0)+1;});
     tR+=Number(r.brokenRating)||0;
     if(r.pctIncome==="40–50%"||r.pctIncome==="Over 50%")o4++;
-    if(r.freeText)txts.push({text:r.freeText,positive:r.positive,area:r.area||r.region,age:r.age,rent:r.rent,problems:r.problems,situation:r.situation,employment:r.employment||r.incomeSource,pctIncome:r.pctIncome,answers:r.answers,pastAreas:r.pastAreas,propertyType:r.propertyType,tenancyLength:r.tenancyLength,conditionRating:r.conditionRating,landlordRating:r.landlordRating,depositIssue:r.depositIssue,gender:r.gender,ukNational:r.ukNational,incomeSource:r.incomeSource,hasGuarantor:r.hasGuarantor,university:r.university,benefitType:r.benefitType});
+    if(r.freeText)txts.push({ts:r.ts,text:r.freeText,positive:r.positive,region:r.region,area:r.area||r.region,age:r.age,rent:r.rent,problems:r.problems,situation:r.situation,employment:r.employment||r.incomeSource,pctIncome:r.pctIncome,answers:r.answers,pastAreas:r.pastAreas,propertyType:r.propertyType,tenancyLength:r.tenancyLength,conditionRating:r.conditionRating,landlordRating:r.landlordRating,depositIssue:r.depositIssue,gender:r.gender,ukNational:r.ukNational,incomeSource:r.incomeSource,hasGuarantor:r.hasGuarantor,university:r.university,benefitType:r.benefitType,brokenRating:r.brokenRating,rentControl:r.rentControl,proposedFix:r.proposedFix,howFound:r.howFound,nationality:r.nationality,rightToRent:r.rightToRent,relationship:r.relationship});
     if(r.proposedFix)fixes.push({text:r.proposedFix,area:r.area||r.region,rating:r.brokenRating});
     const loc=r.area||r.region;if(loc)(r.problems||[]).forEach(p=>{if(!pL[loc])pL[loc]={};pL[loc][p]=(pL[loc][p]||0)+1;});
     if(r.answers)Object.values(r.answers).forEach(a=>{anC[a]=(anC[a]||0)+1;});
@@ -568,42 +568,7 @@ function Dash({data,loading,reload,onClear,onBack}){
       {n===0?<div style={{textAlign:"center",padding:"60px 0"}}><p className="serif" style={{fontSize:20,opacity:.3}}>No responses yet</p></div>:<>
 
       {/* ═ RESPONSES TAB ═ */}
-      {tab==="responses"&&<div>
-        {/* Quick stats row */}
-        <div style={{display:"flex",gap:10,marginBottom:20,flexWrap:"wrap"}}>
-          <Stat l="Avg Rating" v={`${avg}/10`}/><Stat l="Top Issue" v={pD[0]?.name||"—"}/><Stat l=">40% Income" v={`${n?Math.round((o4/n)*100):0}%`}/><Stat l="Regions" v={Object.keys(rC).length}/>
-        </div>
-        {/* Responses feed */}
-        <div style={{display:"flex",flexDirection:"column",gap:10}}>
-          {txts.map((r,i)=>(
-            <div key={i} className="card" style={{padding:"18px 22px"}}>
-              <div style={{display:"flex",justifyContent:"space-between",marginBottom:8,flexWrap:"wrap",gap:6}}>
-                <span style={{fontSize:12,fontWeight:700}}>Age {r.age} · {r.gender} · {r.employment||r.incomeSource} · {r.situation}</span>
-                <span style={{fontSize:11,color:"#999"}}>{r.area} · {r.propertyType} · {r.rent} · {r.pctIncome}{r.hasGuarantor==="No"?" · No guarantor":""}{r.ukNational==="No"?" · Non-UK":""}  </span>
-              </div>
-              <div className="serif" style={{fontSize:15,lineHeight:1.65,marginBottom:10,fontStyle:"italic",color:"#333"}}>"{r.text}"</div>
-              {(r.conditionRating||r.landlordRating)&&<div style={{fontSize:11,color:"#999",marginBottom:6}}>Condition: {r.conditionRating}/10 · Landlord: {r.landlordRating}/10{r.tenancyLength?" · "+r.tenancyLength:""}{r.depositIssue&&r.depositIssue!=="No issues"?" · Deposit: "+r.depositIssue:""}{r.benefits&&r.benefits!=="No benefits"?" · "+r.benefits:""}</div>}
-              {r.positive&&<div style={{fontSize:13,lineHeight:1.6,color:"#6B6B6B",marginBottom:10,paddingLeft:12,borderLeft:"2px solid #E0E0E0"}}>
-                <span style={{fontWeight:700,fontSize:11,color:"#999",display:"block",marginBottom:2}}>POSITIVE</span>{r.positive}</div>}
-              {r.problems?.length>0&&<div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:6}}>
-                {r.problems.map((p,j)=>(<span key={j} className="tag">{p}</span>))}
-              </div>}
-              {r.pastAreas?.length>0&&<div style={{fontSize:11,color:"#999"}}>Past areas: {r.pastAreas.join(", ")}</div>}
-              {r.answers&&Object.keys(r.answers).length>0&&<div style={{fontSize:11,color:"#AAA",marginTop:4}}>
-                {Object.values(r.answers).join(" · ")}</div>}
-            </div>
-          ))}
-        </div>
-        {fixes.length>0&&<div style={{marginTop:24}}><h3 className="serif" style={{fontSize:16,marginBottom:12}}>Proposed solutions</h3>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-            {fixes.map((f,i)=>(
-              <div key={i} className="card" style={{padding:"14px 18px"}}>
-                <div className="serif" style={{fontSize:13,lineHeight:1.55}}>"{f.text}"</div>
-                <div style={{fontSize:10,color:"#999",marginTop:5}}>📍 {f.area} · Rating: {f.rating}/10</div>
-              </div>))}
-          </div>
-        </div>}
-      </div>}
+      {tab==="responses"&&<ResponsesTab txts={txts} fixes={fixes} rC={rC} pC={pC} n={n} avg={avg} o4={o4} pD={sr(pC)} agD={sr(agC)}/>}
 
       {/* ═ ANALYSIS TAB ═ */}
       {tab==="analysis"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
@@ -727,6 +692,201 @@ function Dash({data,loading,reload,onClear,onBack}){
   );
 }
 
+
+
+/* ═══════════ RESPONSES TAB — Organised, timestamped, navigatable ═══════════ */
+function ResponsesTab({txts,fixes,rC,pC,n,avg,o4,pD,agD}){
+  const [filter,setFilter]=useState("all");
+  const [probFilter,setProbFilter]=useState("");
+  const [expanded,setExpanded]=useState(null);
+  const [sortBy,setSortBy]=useState("newest");
+
+  // Sort responses
+  const sorted=[...txts].sort((a,b)=>{
+    if(sortBy==="newest")return(b.ts||0)-(a.ts||0);
+    if(sortBy==="oldest")return(a.ts||0)-(b.ts||0);
+    if(sortBy==="rating")return(b.brokenRating||0)-(a.brokenRating||0);
+    return 0;
+  });
+
+  // Filter
+  const filtered=sorted.filter(r=>{
+    if(filter!=="all"&&r.region!==filter)return false;
+    if(probFilter&&!(r.problems||[]).includes(probFilter))return false;
+    return true;
+  });
+
+  // Time analytics
+  const timestamps=txts.filter(r=>r.ts).map(r=>r.ts).sort();
+  const avgGap=timestamps.length>1?((timestamps[timestamps.length-1]-timestamps[0])/(timestamps.length-1)/60000).toFixed(0):0;
+  const today=Date.now();
+  const last24h=txts.filter(r=>r.ts&&r.ts>today-86400000).length;
+  const lastHour=txts.filter(r=>r.ts&&r.ts>today-3600000).length;
+
+  // Area comparison stats
+  const areaStats={};
+  txts.forEach(r=>{
+    const a=r.area||r.region||"Unknown";
+    if(!areaStats[a])areaStats[a]={count:0,totalRating:0,totalCondition:0,totalLandlord:0,problems:{}};
+    areaStats[a].count++;
+    areaStats[a].totalRating+=(Number(r.brokenRating)||0);
+    areaStats[a].totalCondition+=(Number(r.conditionRating)||0);
+    areaStats[a].totalLandlord+=(Number(r.landlordRating)||0);
+    (r.problems||[]).forEach(p=>{areaStats[a].problems[p]=(areaStats[a].problems[p]||0)+1;});
+  });
+
+  const fmtTime=(ts)=>{if(!ts)return"—";const d=new Date(ts);return d.toLocaleString("en-GB",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});};
+  const timeAgo=(ts)=>{if(!ts)return"";const m=Math.floor((Date.now()-ts)/60000);if(m<1)return"just now";if(m<60)return m+"m ago";if(m<1440)return Math.floor(m/60)+"h ago";return Math.floor(m/1440)+"d ago";};
+
+  return(<div>
+    {/* Stats bar */}
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))",gap:8,marginBottom:14}}>
+      <Stat l="Total" v={n}/><Stat l="Avg Rating" v={`${avg}/10`}/><Stat l=">40% Income" v={`${n?Math.round((o4/n)*100):0}%`}/>
+      <Stat l="Last Hour" v={lastHour}/><Stat l="Last 24h" v={last24h}/><Stat l="Avg Gap" v={`${avgGap}m`}/>
+      <Stat l="Regions" v={Object.keys(rC).length}/><Stat l="Top Issue" v={pD[0]?.name?.split(" ")[0]||"—"}/>
+    </div>
+
+    {/* Filters + Sort */}
+    <div className="card" style={{padding:"12px 16px",marginBottom:14}}>
+      <div style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
+        <span style={{fontSize:11,fontWeight:700,color:"#999"}}>FILTER:</span>
+        <select value={filter} onChange={e=>setFilter(e.target.value)} style={{padding:"6px 12px",borderRadius:8,border:"1.5px solid #E0E0E0",fontSize:12,fontFamily:"inherit"}}>
+          <option value="all">All regions ({n})</option>
+          {Object.entries(rC).sort((a,b)=>b[1]-a[1]).map(([r,c])=><option key={r} value={r}>{r} ({c})</option>)}
+        </select>
+        <select value={probFilter} onChange={e=>setProbFilter(e.target.value)} style={{padding:"6px 12px",borderRadius:8,border:"1.5px solid #E0E0E0",fontSize:12,fontFamily:"inherit"}}>
+          <option value="">All problems</option>
+          {pD.map(p=><option key={p.name} value={p.name}>{p.name} ({p.value})</option>)}
+        </select>
+        <span style={{fontSize:11,fontWeight:700,color:"#999",marginLeft:8}}>SORT:</span>
+        {[["newest","Newest"],["oldest","Oldest"],["rating","Worst rated"]].map(([k,l])=>(
+          <button key={k} onClick={()=>setSortBy(k)} style={{padding:"5px 12px",borderRadius:100,border:sortBy===k?"1.5px solid #1A1A1A":"1.5px solid #E0E0E0",background:sortBy===k?"#1A1A1A":"#fff",color:sortBy===k?"#fff":"#555",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>{l}</button>
+        ))}
+        <span style={{fontSize:11,color:"#999",marginLeft:"auto"}}>Showing {filtered.length} of {n}</span>
+      </div>
+    </div>
+
+    {/* Area comparison */}
+    {Object.keys(areaStats).length>1&&<div className="card" style={{marginBottom:14}}>
+      <p className="label">Area comparison</p>
+      <div style={{overflowX:"auto"}}>
+        <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+          <thead><tr style={{borderBottom:"1px solid #E0E0E0"}}>
+            <th style={{textAlign:"left",padding:"6px 8px",fontWeight:700}}>Area</th>
+            <th style={{textAlign:"center",padding:"6px 8px"}}>Responses</th>
+            <th style={{textAlign:"center",padding:"6px 8px"}}>Avg Broken</th>
+            <th style={{textAlign:"center",padding:"6px 8px"}}>Condition</th>
+            <th style={{textAlign:"center",padding:"6px 8px"}}>Landlord</th>
+            <th style={{textAlign:"left",padding:"6px 8px"}}>Top Problem</th>
+          </tr></thead>
+          <tbody>{Object.entries(areaStats).sort((a,b)=>b[1].count-a[1].count).map(([area,s])=>{
+            const topP=Object.entries(s.problems).sort((a,b)=>b[1]-a[1])[0];
+            return(<tr key={area} style={{borderBottom:"1px solid #F5F5F5"}}>
+              <td style={{padding:"6px 8px",fontWeight:600}}>{area}</td>
+              <td style={{textAlign:"center",padding:"6px 8px"}}>{s.count}</td>
+              <td style={{textAlign:"center",padding:"6px 8px",fontWeight:700,color:s.totalRating/s.count>7?"#C0392B":s.totalRating/s.count>5?"#E67E22":"#27AE60"}}>{(s.totalRating/s.count).toFixed(1)}</td>
+              <td style={{textAlign:"center",padding:"6px 8px"}}>{(s.totalCondition/s.count).toFixed(1)}/10</td>
+              <td style={{textAlign:"center",padding:"6px 8px"}}>{(s.totalLandlord/s.count).toFixed(1)}/10</td>
+              <td style={{padding:"6px 8px"}}>{topP?`${topP[0]} (${topP[1]})`:""}</td>
+            </tr>);
+          })}</tbody>
+        </table>
+      </div>
+    </div>}
+
+    {/* Response cards */}
+    <div style={{display:"flex",flexDirection:"column",gap:8}}>
+      {filtered.map((r,i)=>{
+        const isExpanded=expanded===i;
+        return(
+          <div key={i} className="card" style={{padding:0,overflow:"hidden",cursor:"pointer"}} onClick={()=>setExpanded(isExpanded?null:i)}>
+            {/* Header row — always visible */}
+            <div style={{padding:"14px 18px",display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:8,flexWrap:"wrap"}}>
+              <div style={{flex:1,minWidth:200}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
+                  <span style={{fontSize:12,fontWeight:700}}>Age {r.age}</span>
+                  <span style={{fontSize:10,color:"#999"}}>{r.gender} · {r.employment||r.incomeSource} · {r.situation}</span>
+                </div>
+                <div className="serif" style={{fontSize:14,lineHeight:1.5,color:"#333"}}>{isExpanded?`"${r.text}"`:(`"${r.text?.slice(0,120)}${(r.text?.length||0)>120?"…":""}"`)}</div>
+              </div>
+              <div style={{textAlign:"right",minWidth:140}}>
+                <div style={{fontSize:10,fontWeight:700,color:"#999"}}>{fmtTime(r.ts)}</div>
+                <div style={{fontSize:10,color:"#CCC"}}>{timeAgo(r.ts)}</div>
+                <div style={{fontSize:11,marginTop:4}}>{r.area} · {r.rent}</div>
+              </div>
+            </div>
+            {/* Problem tags — always visible */}
+            <div style={{padding:"0 18px 10px",display:"flex",flexWrap:"wrap",gap:4}}>
+              {(r.problems||[]).map((p,j)=>(<span key={j} className="tag">{p}</span>))}
+              <span style={{fontSize:10,padding:"3px 10px",borderRadius:100,background:r.brokenRating>7?"rgba(192,57,43,.08)":r.brokenRating>4?"rgba(230,126,34,.08)":"rgba(39,174,96,.08)",color:r.brokenRating>7?"#C0392B":r.brokenRating>4?"#E67E22":"#27AE60",fontWeight:700}}>Rating: {r.brokenRating}/10</span>
+            </div>
+
+            {/* Expanded detail — full breakdown */}
+            {isExpanded&&<div style={{borderTop:"1px solid #F0F0F0",padding:"14px 18px",background:"#FAFAFA",fontSize:12}}>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:12}}>
+                <div><span style={{fontWeight:700,color:"#999",fontSize:10,display:"block"}}>DEMOGRAPHICS</span>
+                  <div>Age: {r.age} · {r.gender}</div>
+                  <div>{r.relationship||""}</div>
+                  <div>{r.ukNational==="No"?`${r.nationality||"Non-UK"} · Right: ${r.rightToRent||"?"}`:""}</div>
+                </div>
+                <div><span style={{fontWeight:700,color:"#999",fontSize:10,display:"block"}}>INCOME & WORK</span>
+                  <div>{r.incomeSource||r.employment||"—"}</div>
+                  <div>{r.university?`Uni: ${r.university}`:""}</div>
+                  <div>{r.benefitType?`Benefits: ${r.benefitType}`:""}</div>
+                  <div>Guarantor: {r.hasGuarantor||"—"}</div>
+                </div>
+                <div><span style={{fontWeight:700,color:"#999",fontSize:10,display:"block"}}>PROPERTY</span>
+                  <div>{r.propertyType||"—"} · {r.situation}</div>
+                  <div>Tenancy: {r.tenancyLength||"—"}</div>
+                  <div>Found via: {r.howFound||"—"}</div>
+                  <div>Deposit: {r.depositIssue||"—"}</div>
+                </div>
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:12}}>
+                <div><span style={{fontWeight:700,color:"#999",fontSize:10,display:"block"}}>LOCATION</span>
+                  <div>{r.region} → {r.area}</div>
+                  {r.pastAreas?.length>0&&<div style={{color:"#999",marginTop:2}}>Past: {r.pastAreas.join(", ")}</div>}
+                </div>
+                <div><span style={{fontWeight:700,color:"#999",fontSize:10,display:"block"}}>FINANCIAL</span>
+                  <div>Rent: {r.rent} · {r.pctIncome} of income</div>
+                </div>
+                <div><span style={{fontWeight:700,color:"#999",fontSize:10,display:"block"}}>RATINGS</span>
+                  <div>System: {r.brokenRating}/10 · Condition: {r.conditionRating}/10 · Landlord: {r.landlordRating}/10</div>
+                  <div>Rent control: {r.rentControl||"—"}</div>
+                </div>
+              </div>
+              {r.positive&&<div style={{padding:10,borderRadius:8,background:"rgba(39,174,96,.04)",border:"1px solid rgba(39,174,96,.08)",marginBottom:10}}>
+                <span style={{fontWeight:700,color:"#27AE60",fontSize:10}}>POSITIVE EXPERIENCE</span>
+                <div style={{marginTop:4,lineHeight:1.6}}>{r.positive}</div>
+              </div>}
+              {r.proposedFix&&<div style={{padding:10,borderRadius:8,background:"rgba(41,128,185,.04)",border:"1px solid rgba(41,128,185,.08)",marginBottom:10}}>
+                <span style={{fontWeight:700,color:"#2980B9",fontSize:10}}>PROPOSED SOLUTION</span>
+                <div style={{marginTop:4,lineHeight:1.6}}>{r.proposedFix}</div>
+              </div>}
+              {r.answers&&Object.keys(r.answers).length>0&&<div style={{padding:10,borderRadius:8,border:"1px solid #F0F0F0"}}>
+                <span style={{fontWeight:700,color:"#999",fontSize:10}}>FOLLOW-UP ANSWERS</span>
+                <div style={{marginTop:4}}>{Object.values(r.answers).map((a,j)=><div key={j} style={{marginBottom:2}}>• {a}</div>)}</div>
+              </div>}
+              <div style={{fontSize:10,color:"#CCC",marginTop:8}}>Submitted: {r.ts?new Date(r.ts).toLocaleString("en-GB"):"Unknown"}</div>
+            </div>}
+          </div>
+        );
+      })}
+    </div>
+
+    {/* Solutions section */}
+    {fixes.length>0&&<div style={{marginTop:20}}>
+      <p className="label">Proposed solutions ({fixes.length})</p>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+        {fixes.map((f,i)=>(
+          <div key={i} className="card" style={{padding:"12px 16px"}}>
+            <div className="serif" style={{fontSize:12,lineHeight:1.55}}>"{f.text}"</div>
+            <div style={{fontSize:10,color:"#999",marginTop:4}}>{f.area} · {f.rating}/10</div>
+          </div>))}
+      </div>
+    </div>}
+  </div>);
+}
 
 /* ═══════════ REGIONAL TAB — 3D Map + Ticket System + KPIs ═══════════ */
 function RegionalTab({data,rC,pC,pL,pD,n,txts,selR,setSelR,ai,aiL,loadAI,fixes}){
