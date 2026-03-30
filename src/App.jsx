@@ -192,35 +192,39 @@ function Survey({onAdmin}){
     return p;
   };
 
-  // AI-personalised questions
+  // AI-personalised questions — via Netlify function, with diverse fallback
   const generateAI=async()=>{
     setAiLoad(true);const pr=analyse(d.freeText);u("problems",pr);
+    // Try Netlify AI function first
     try{
-      const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:800,
-          messages:[{role:"user",content:`UK housing researcher. Create 4 personalised follow-up questions for this renter:
-
-PROFILE: ${profile()}
-CHALLENGES: "${d.freeText}"
-IDENTIFIED PROBLEMS: ${pr.join(", ")}
-${d.positive?"POSITIVES: "+d.positive:""}
-DEPOSIT ISSUES: ${d.depositIssue||"none"}
-CONDITION: ${d.conditionRating}/10, LANDLORD: ${d.landlordRating}/10
-
-Generate questions SPECIFIC to their demographic, region (${d.region}), income source (${d.incomeSource}), and problems. Reference local context. For students: ask about term-time vs summer housing, uni accommodation. For benefits claimants: ask about LHA gaps, council support. For migrants: ask about discrimination, documentation barriers.
-
-Return ONLY JSON: [{"id":"ai1","q":"question","o":["opt1","opt2","opt3","opt4"]},...]`}]})});
-      const data=await r.json();const txt=data.content?.filter(c=>c.type==="text").map(c=>c.text).join("");
-      u("aiQuestions",JSON.parse(txt.replace(/```json|```/g,"").trim()));
-    }catch(e){
-      const qs=[];
-      if(pr.includes("Rental affordability"))qs.push({id:"f1",q:`In ${d.area}, how is affordability affecting you?`,o:["Skipping essentials","Can't socialise","Moved further from work","Considering leaving"]});
-      if(pr.includes("Poor conditions"))qs.push({id:"f2",q:"Have you reported condition issues?",o:["Yes, fixed","Yes, ignored","No, fear eviction","Reported to council"]});
-      if(pr.includes("Landlord issues"))qs.push({id:"f3",q:"What describes your landlord?",o:["Unresponsive","Hostile","Enters without notice","Withholds deposit"]});
-      if(pr.includes("Discrimination"))qs.push({id:"f4",q:"What discrimination have you faced?",o:["'No DSS' rejection","Nationality-based","Age-based","No UK guarantor"]});
-      while(qs.length<4)qs.push({id:"fb"+qs.length,q:"How is this affecting your wellbeing?",o:["Minor","Noticeable stress","Significant","Severe impact"]});
-      u("aiQuestions",qs.slice(0,4));
-    }
+      const r=await fetch("/.netlify/functions/ai",{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({profile:profile(),freeText:d.freeText,problems:pr,positive:d.positive,
+          region:d.region,incomeSource:d.incomeSource,depositIssue:d.depositIssue,
+          conditionRating:d.conditionRating,landlordRating:d.landlordRating})});
+      if(r.ok){const data=await r.json();if(data.questions?.length>=3){u("aiQuestions",data.questions);setAiLoad(false);nx();return;}}
+    }catch(e){}
+    // Diverse fallback — every question is different
+    const pool=[
+      {id:"f1",q:`In ${d.area}, how is rent affordability affecting your daily life?`,o:["Skipping meals or essentials","Can't afford to socialise","Had to move further from work","Considering leaving the area entirely"]},
+      {id:"f2",q:"How would you describe your property's physical condition?",o:["Damp, mould or leaks","Broken fixtures landlord won't repair","Poor insulation / freezing in winter","Generally acceptable with minor issues"]},
+      {id:"f3",q:"How responsive is your landlord or letting agent?",o:["Completely unresponsive","Acknowledges but doesn't follow through","Responsive and helpful","Hostile or intimidating when contacted"]},
+      {id:"f4",q:"How secure do you feel in your current tenancy?",o:["Very insecure — could be asked to leave anytime","Somewhat worried — short-term contract","Fairly secure — long tenancy in place","Very secure — good relationship with landlord"]},
+      {id:"f5",q:"How competitive was finding your current place?",o:["Dozens of applicants per viewing","Had to offer above asking rent","Took months of searching","Found it relatively easily"]},
+      {id:"f6",q:`What would make the biggest difference to renters in ${d.region}?`,o:["Rent caps tied to local wages","Mandatory property condition standards","Longer minimum tenancy periods","More social and affordable housing"]},
+      {id:"f7",q:"How has renting affected your future plans?",o:["Can't save for a deposit to buy","Delayed starting a family","Can't commit to a career in this area","Feel stuck with no way forward"]},
+      {id:"f8",q:"Have you ever experienced discrimination when looking to rent?",o:["Yes — rejected for being on benefits","Yes — nationality or immigration status","Yes — age or student status","No discrimination experienced"]},
+      {id:"f9",q:"How did you handle your deposit?",o:["Paid it fine, it's protected","Struggled to afford it","Previous deposit was unfairly withheld","Had to use a guarantor or pay months upfront"]},
+      {id:"f10",q:"How has renting affected your mental health?",o:["Significant anxiety or stress","Some impact but manageable","Major impact — affecting sleep, work, relationships","Minimal impact"]},
+    ];
+    // Pick problem-relevant questions first, then fill with others
+    const picked=[];const used=new Set();
+    const probMap={"Rental affordability":["f1","f7"],"Poor conditions":["f2"],"Landlord issues":["f3"],"Tenure insecurity":["f4"],"Market competition":["f5"],"Discrimination":["f8"],"High upfront costs":["f9"],"Mental health":["f10"],"Unable to save":["f7"]};
+    for(const p of pr){for(const id of (probMap[p]||[])){if(!used.has(id)){const q=pool.find(x=>x.id===id);if(q){picked.push(q);used.add(id);}}}if(picked.length>=4)break;}
+    // Fill remaining with unused questions
+    for(const q of pool){if(picked.length>=4)break;if(!used.has(q.id)){picked.push(q);used.add(q.id);}}
+    // Add region-specific question
+    if(picked.length<4)picked.push({id:"fr",q:`What's the single biggest issue facing renters in ${d.area} right now?`,o:["Rent prices rising too fast","Not enough properties available","Poor quality housing stock","Unfair treatment by landlords/agents"]});
+    u("aiQuestions",picked.slice(0,4));
     setAiLoad(false);nx();
   };
 
