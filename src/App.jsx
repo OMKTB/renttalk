@@ -615,49 +615,7 @@ function Dash({data,loading,reload,onClear,onBack}){
       {tab==="regional"&&<RegionalTab data={data} rC={rC} pC={pC} pL={pL} pD={sr(pC)} n={n} txts={txts} selR={selR} setSelR={setSelR} ai={ai} aiL={aiL} loadAI={loadAI} fixes={fixes}/>}
 
       {/* ═ INTEL TAB ═ */}
-      {tab==="intel"&&<div>
-        <div className="card" style={{marginBottom:14}}>
-          <p className="label">Intelligence scanner</p>
-          <p style={{fontSize:12,color:"#999",marginBottom:12}}>Searches Reddit, Google News, and Companies House based on identified problems.</p>
-          <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:14}}>
-            <select value={intR} onChange={e=>setIntR(e.target.value)} style={{padding:"8px 14px",borderRadius:10,border:"1.5px solid #E0E0E0",fontFamily:"inherit",fontSize:13}}>
-              <option value="">All regions</option>{Object.keys(rC).map(r=><option key={r} value={r}>{r}</option>)}
-            </select>
-            <button className="btn primary sm" onClick={()=>runScan(intR)} disabled={intL||n===0}>{intL?"Scanning…":"Run scan"}</button>
-            {intel?.lastRun&&<span style={{fontSize:11,color:"#999",alignSelf:"center"}}>Last: {new Date(intel.lastRun).toLocaleString()}</span>}
-          </div>
-        </div>
-        {intel?.scans?.length>0&&(()=>{const s=intel.scans[intel.scans.length-1];return(<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-          {s.reddit?.length>0&&<div className="card" style={{gridColumn:"1/-1"}}><p className="label">Reddit ({s.reddit.length})</p>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,maxHeight:350,overflowY:"auto"}}>
-              {s.reddit.map((p,i)=>(<div key={i} style={{padding:10,borderRadius:8,border:"1px solid rgba(0,0,0,.04)",fontSize:12}}>
-                <div style={{fontWeight:700,marginBottom:3}}>{(p.title||"").slice(0,100)}</div>
-                {p.text&&<div style={{color:"#6B6B6B",marginBottom:4,lineHeight:1.5}}>{p.text.slice(0,150)}{p.text.length>150?"…":""}</div>}
-                <div style={{fontSize:10,color:"#999"}}>r/{p.subreddit} · ⬆{p.score} · 💬{p.comments} {p.problem&&<span className="tag" style={{marginLeft:4}}>{p.problem}</span>}</div>
-                <a href={p.url} target="_blank" rel="noreferrer" style={{fontSize:10,color:"#555"}}>Open →</a>
-              </div>))}
-            </div>
-          </div>}
-          {s.news?.length>0&&<div className="card" style={{gridColumn:"1/-1"}}><p className="label">News ({s.news.length})</p>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-              {s.news.map((a,i)=>(<div key={i} style={{padding:10,borderRadius:8,border:"1px solid rgba(0,0,0,.04)",fontSize:12}}>
-                <div style={{fontWeight:700,marginBottom:3}}>{(a.title||"").slice(0,100)}</div>
-                <div style={{fontSize:10,color:"#999"}}>{a.publisher} · {a.date?new Date(a.date).toLocaleDateString():""}</div>
-                <a href={a.url} target="_blank" rel="noreferrer" style={{fontSize:10,color:"#555"}}>Read →</a>
-              </div>))}
-            </div>
-          </div>}
-          {s.companies?.length>0&&<div className="card" style={{gridColumn:"1/-1"}}><p className="label">Companies House ({s.companies.length})</p>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
-              {s.companies.map((c,i)=>(<div key={i} style={{padding:10,borderRadius:8,border:"1px solid rgba(0,0,0,.04)",fontSize:11}}>
-                <div style={{fontWeight:700}}>{c.name}</div><div style={{color:"#999"}}>#{c.number} · {c.status}</div>
-                <div style={{color:"#AAA",fontSize:10}}>{c.address}</div>
-                <a href={c.url} target="_blank" rel="noreferrer" style={{fontSize:10,color:"#555"}}>View →</a>
-              </div>))}
-            </div>
-          </div>}
-        </div>);})()}
-      </div>}
+      {tab==="intel"&&<IntelCentre data={data} txts={txts} fixes={fixes} rC={rC} pC={pC} pL={pL} n={n} avg={avg}/>}
 
       {/* ═ TOOLS TAB ═ */}
       {tab==="tools"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
@@ -693,6 +651,331 @@ function Dash({data,loading,reload,onClear,onBack}){
 }
 
 
+
+
+/* ═══════════ INTELLIGENCE CENTRE ═══════════ */
+function IntelCentre({data,txts,fixes,rC,pC,pL,n,avg}){
+  const [view,setView]=useState("overview");
+  const [selProb,setSelProb]=useState(null);
+  const [intel,setIntel]=useState(null);
+  const [intL,setIntL]=useState(false);
+  const [intR,setIntR]=useState("");
+  const INTEL_FUNC="/.netlify/functions/intel";
+
+  const loadInt=async()=>{try{const r=await fetch(INTEL_FUNC);if(r.ok)setIntel(await r.json());}catch(e){}};
+  useEffect(()=>{loadInt();},[]);
+  const runScan=async(region)=>{setIntL(true);try{await fetch(INTEL_FUNC,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({region:region||null,problems:Object.keys(pC),freeTexts:txts.map(t=>t.text)})});await loadInt();}catch(e){}setIntL(false);};
+
+  // === TEMPORAL ANALYSIS ===
+  const timestamps=data.filter(r=>r.ts).map(r=>({ts:r.ts,region:r.region,area:r.area,problems:r.problems||[]})).sort((a,b)=>a.ts-b.ts);
+  const hourBuckets={};
+  const dayBuckets={};
+  timestamps.forEach(t=>{
+    const d=new Date(t.ts);
+    const hour=d.getHours();
+    const day=d.toLocaleDateString("en-GB",{weekday:"short"});
+    hourBuckets[hour]=(hourBuckets[hour]||0)+1;
+    dayBuckets[day]=(dayBuckets[day]||0)+1;
+  });
+  const peakHour=Object.entries(hourBuckets).sort((a,b)=>b[1]-a[1])[0];
+  const peakDay=Object.entries(dayBuckets).sort((a,b)=>b[1]-a[1])[0];
+
+  // Submission velocity
+  const now=Date.now();
+  const last24=data.filter(r=>r.ts&&r.ts>now-86400000).length;
+  const last48=data.filter(r=>r.ts&&r.ts>now-172800000).length;
+  const velocity=last48>0?((last24/(last48-last24+0.01))*100-100).toFixed(0):0;
+
+  // === PROBLEM CORRELATION MATRIX ===
+  const coOccur={};
+  data.forEach(r=>{
+    const ps=r.problems||[];
+    for(let i=0;i<ps.length;i++)for(let j=i+1;j<ps.length;j++){
+      const key=[ps[i],ps[j]].sort().join(" × ");
+      coOccur[key]=(coOccur[key]||0)+1;
+    }
+  });
+  const topCorr=Object.entries(coOccur).sort((a,b)=>b[1]-a[1]).slice(0,8);
+
+  // === SENTIMENT BREAKDOWN ===
+  const negWords=/terrible|awful|horrible|nightmare|unliveable|broken|unsafe|freezing|mould|harass|threaten|evict|stress|anxiety|depress|angry|frustrated|disgusting|filthy|rat|mice|cockroach/i;
+  const posWords=/good|great|nice|lovely|fair|reasonable|responsive|helpful|friendly|clean|comfortable|decent|quiet|happy|lucky|excellent/i;
+  let posCount=0,negCount=0,mixCount=0,neutralCount=0;
+  txts.forEach(r=>{
+    const neg=negWords.test(r.text);const pos=posWords.test(r.text)||posWords.test(r.positive||"");
+    if(pos&&neg)mixCount++;else if(pos)posCount++;else if(neg)negCount++;else neutralCount++;
+  });
+
+  // === DEMOGRAPHIC RISK PROFILES ===
+  const demoRisk={};
+  data.forEach(r=>{
+    const key=r.incomeSource||r.employment||"Unknown";
+    if(!demoRisk[key])demoRisk[key]={count:0,totalRating:0,problems:{},o50:0};
+    demoRisk[key].count++;
+    demoRisk[key].totalRating+=Number(r.brokenRating)||0;
+    if(r.pctIncome==="Over 50%"||r.pctIncome==="40–50%")demoRisk[key].o50++;
+    (r.problems||[]).forEach(p=>{demoRisk[key].problems[p]=(demoRisk[key].problems[p]||0)+1;});
+  });
+
+
+  // === PROPOSED INTERVENTIONS ===
+  const interventions=Object.entries(pC).sort((a,b)=>b[1]-a[1]).map(([prob,count])=>{
+    const pct=((count/n)*100).toFixed(1);
+    const affected=Object.entries(pL).filter(([,p])=>p[prob]).length;
+    const isEasy={"Poor conditions":true,"Energy & bills":true,"High upfront costs":true}[prob];
+    const isProfit={"Poor conditions":true,"Energy & bills":true,"Market competition":true}[prob];
+    let shield="",mandate="";
+    if(prob==="Rental affordability"){shield="Affordability Index Tool — real-time rent-to-income calculator per postcode";mandate="Local Housing Allowance rates updated quarterly to match market rents";}
+    else if(prob==="Poor conditions"){shield="Condition Verification — pre-tenancy property inspection scoring";mandate="Mandatory annual property condition certificates for all rental properties";}
+    else if(prob==="Landlord issues"){shield="Landlord Rating System — tenant reviews visible to future renters";mandate="Compulsory landlord licensing with enforceable response time standards";}
+    else if(prob==="Tenure insecurity"){shield="Tenancy Stability Score — risk assessment for prospective tenants";mandate="Minimum 3-year tenancies as default with cause-only eviction";}
+    else if(prob==="Market competition"){shield="Fair Queue System — first-qualified-first-served rental applications";mandate="Ban on rental bidding wars and above-asking-rent offers";}
+    else if(prob==="High upfront costs"){shield="Deposit Passport — portable deposits between tenancies";mandate="Interest-free deposit loans for under-30s via local authorities";}
+    else if(prob==="Energy & bills"){shield="Energy Cost Estimator — predicted bills based on EPC and usage data";mandate="Minimum EPC C for all rentals by 2027 with landlord-funded upgrades";}
+    else if(prob==="Discrimination"){shield="Anonymous Applications — name/age/status blind until viewing stage";mandate="Extend Equality Act protections to explicitly cover housing benefit recipients";}
+    else if(prob==="Mental health"){shield="Wellbeing Check-in — periodic mental health resource prompts for tenants";mandate="Require councils to fund renter mental health support services";}
+    else if(prob==="Unable to save"){shield="Rent-to-Own Pathway — percentage of rent credited toward deposit";mandate="Employer-matched rental deposit savings scheme (like pension auto-enrolment)";}
+    else{shield="Custom solution needed";mandate="Further research recommended";}
+    return{prob,count,pct,affected,isEasy:!!isEasy,isProfit:!!isProfit,shield,mandate};
+  });
+
+  const views=[["overview","Overview"],["temporal","Timing"],["correlations","Correlations"],["demographics","Demographics"],["interventions","Interventions"],["scanner","External Sources"]];
+
+
+  return(<div>
+    {/* Sub-navigation */}
+    <div style={{display:"flex",gap:0,borderBottom:"1px solid rgba(0,0,0,.06)",marginBottom:16}}>
+      {views.map(([k,l])=>(<button key={k} onClick={()=>setView(k)} style={{padding:"8px 14px",fontSize:11,fontWeight:view===k?700:500,color:view===k?"#1A1A1A":"#999",background:"none",border:"none",borderBottom:view===k?"2px solid #1A1A1A":"2px solid transparent",cursor:"pointer",fontFamily:"inherit"}}>{l}</button>))}
+    </div>
+
+    {/* === OVERVIEW === */}
+    {view==="overview"&&<div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:8,marginBottom:14}}>
+        <Stat l="Responses" v={n}/><Stat l="Avg Broken" v={`${avg}/10`}/>
+        <Stat l="Positive" v={posCount}/><Stat l="Negative" v={negCount}/><Stat l="Mixed" v={mixCount}/>
+        <Stat l="24h Velocity" v={`${velocity>0?"+":""}${velocity}%`}/><Stat l="Peak Hour" v={peakHour?`${peakHour[0]}:00`:"-"}/>
+      </div>
+      {/* Sentiment gauge */}
+      <div className="card" style={{marginBottom:14}}>
+        <p className="label">Sentiment distribution</p>
+        <div style={{display:"flex",height:24,borderRadius:6,overflow:"hidden",marginTop:8}}>
+          {posCount>0&&<div style={{flex:posCount,background:"#27AE60",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"#fff",fontWeight:700}}>{posCount} positive</div>}
+          {mixCount>0&&<div style={{flex:mixCount,background:"#F1C40F",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700}}>{mixCount} mixed</div>}
+          {neutralCount>0&&<div style={{flex:neutralCount,background:"#BDC3C7",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700}}>{neutralCount} neutral</div>}
+          {negCount>0&&<div style={{flex:negCount,background:"#C0392B",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"#fff",fontWeight:700}}>{negCount} negative</div>}
+        </div>
+      </div>
+      {/* Key findings */}
+      <div className="card" style={{marginBottom:14}}>
+        <p className="label">Key intelligence findings</p>
+        <div style={{fontSize:13,lineHeight:1.8}}>
+          {n>0&&<>
+            <div style={{marginBottom:8}}>Across {n} responses from {Object.keys(rC).length} regions, the dominant concern is <b>{Object.entries(pC).sort((a,b)=>b[1]-a[1])[0]?.[0]}</b> cited by {((Object.entries(pC).sort((a,b)=>b[1]-a[1])[0]?.[1]||0)/n*100).toFixed(0)}% of respondents.</div>
+            {topCorr.length>0&&<div style={{marginBottom:8}}>The strongest problem correlation is <b>{topCorr[0][0]}</b> ({topCorr[0][1]} co-occurrences) — suggesting these issues share root causes or compound each other.</div>}
+            <div style={{marginBottom:8}}>Sentiment is {negCount>posCount?"predominantly negative":"balanced"} — {negCount} negative vs {posCount} positive experiences. {mixCount>0?`${mixCount} respondents reported both good and bad aspects.`:""}</div>
+            {peakHour&&<div>Submissions peak at <b>{peakHour[0]}:00</b>{peakDay?` on <b>${peakDay[0]}</b>`:""}. {last24>0?`${last24} responses in the last 24 hours.`:""} {velocity>20?"Submission rate is accelerating.":velocity<-20?"Submission rate is slowing.":"Rate is steady."}</div>}
+          </>}
+        </div>
+      </div>
+    </div>}
+
+
+    {/* === TEMPORAL === */}
+    {view==="temporal"&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+      <div className="card" style={{gridColumn:"1/-1"}}><p className="label">Submission timeline</p>
+        <div style={{display:"flex",gap:4,alignItems:"flex-end",height:80,marginTop:10}}>
+          {Array.from({length:24},(_, h)=>{const c=hourBuckets[h]||0;const max=Math.max(...Object.values(hourBuckets),1);
+            return(<div key={h} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
+              <div style={{width:"100%",background:c>0?"#1A1A1A":"#F0F0F0",borderRadius:2,height:`${(c/max)*60}px`,minHeight:c>0?4:1,opacity:c>0?0.3+0.7*(c/max):0.3}}/>
+              <span style={{fontSize:8,color:"#999"}}>{h}</span>
+            </div>);
+          })}
+        </div>
+        <div style={{fontSize:11,color:"#999",marginTop:8}}>Peak: {peakHour?`${peakHour[0]}:00 (${peakHour[1]} submissions)`:"—"}</div>
+      </div>
+      <div className="card"><p className="label">Velocity</p>
+        <div className="serif" style={{fontSize:28,marginTop:8}}>{velocity>0?"+":""}{velocity}%</div>
+        <div style={{fontSize:11,color:"#999"}}>24h vs prior 24h · {last24} responses today</div>
+      </div>
+      <div className="card"><p className="label">Response gaps</p>
+        <div className="serif" style={{fontSize:28,marginTop:8}}>{timestamps.length>1?((timestamps[timestamps.length-1].ts-timestamps[0].ts)/(timestamps.length-1)/60000).toFixed(0):"—"}m</div>
+        <div style={{fontSize:11,color:"#999"}}>Average time between submissions</div>
+      </div>
+      {/* Problem emergence over time */}
+      <div className="card" style={{gridColumn:"1/-1"}}><p className="label">Problem emergence timeline</p>
+        <div style={{fontSize:12,lineHeight:1.8,marginTop:8}}>
+          {Object.entries(pC).sort((a,b)=>b[1]-a[1]).map(([prob])=>{
+            const first=timestamps.find(t=>t.problems.includes(prob));
+            const last=[...timestamps].reverse().find(t=>t.problems.includes(prob));
+            return first?(<div key={prob} style={{marginBottom:4}}>
+              <b>{prob}</b>: First reported {new Date(first.ts).toLocaleDateString("en-GB",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"})}
+              {last&&last.ts!==first.ts?` → Latest: ${new Date(last.ts).toLocaleDateString("en-GB",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"})}`:""}
+              {` · ${pC[prob]} total`}
+            </div>):null;
+          })}
+        </div>
+      </div>
+    </div>}
+
+    {/* === CORRELATIONS === */}
+    {view==="correlations"&&<div>
+      <div className="card" style={{marginBottom:14}}><p className="label">Problem co-occurrence matrix</p>
+        <p style={{fontSize:12,color:"#6B6B6B",marginBottom:10}}>Problems that appear together in the same response — indicating shared root causes or compounding effects.</p>
+        <div style={{display:"flex",flexDirection:"column",gap:6}}>
+          {topCorr.map(([pair,count])=>{const pct=((count/n)*100).toFixed(0);
+            return(<div key={pair} style={{display:"flex",alignItems:"center",gap:10,padding:10,borderRadius:8,border:"1px solid rgba(0,0,0,.04)"}}>
+              <div style={{flex:1}}><span style={{fontWeight:700,fontSize:13}}>{pair}</span></div>
+              <span style={{fontSize:11,color:"#999"}}>{count} co-occurrences ({pct}%)</span>
+              <div style={{width:100,height:6,borderRadius:3,background:"#F0F0F0"}}><div style={{height:"100%",borderRadius:3,background:"#1A1A1A",width:`${Math.min(parseInt(pct)*2,100)}%`}}/></div>
+            </div>);
+          })}
+        </div>
+      </div>
+      {/* Positive vs negative per problem */}
+      <div className="card"><p className="label">Problem sentiment breakdown</p>
+        <div style={{fontSize:12,marginTop:8}}>
+          {Object.entries(pC).sort((a,b)=>b[1]-a[1]).map(([prob,count])=>{
+            const related=txts.filter(t=>(t.problems||[]).includes(prob));
+            const neg=related.filter(t=>negWords.test(t.text)).length;
+            const pos=related.filter(t=>posWords.test(t.text)||posWords.test(t.positive||"")).length;
+            return(<div key={prob} style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
+              <span style={{width:160,fontWeight:600,fontSize:12}}>{prob}</span>
+              <div style={{flex:1,display:"flex",height:14,borderRadius:4,overflow:"hidden"}}>
+                {pos>0&&<div style={{flex:pos,background:"#27AE60"}}/>}
+                {count-pos-neg>0&&<div style={{flex:count-pos-neg,background:"#BDC3C7"}}/>}
+                {neg>0&&<div style={{flex:neg,background:"#C0392B"}}/>}
+              </div>
+              <span style={{fontSize:10,color:"#999",width:80,textAlign:"right"}}>{pos}+ {neg}−</span>
+            </div>);
+          })}
+        </div>
+      </div>
+    </div>}
+
+
+    {/* === DEMOGRAPHICS === */}
+    {view==="demographics"&&<div>
+      <div className="card" style={{marginBottom:14}}><p className="label">Demographic risk profiles</p>
+        <p style={{fontSize:12,color:"#6B6B6B",marginBottom:10}}>Which demographics face the worst conditions — by income source, severity, and financial strain.</p>
+        <div style={{display:"flex",flexDirection:"column",gap:6}}>
+          {Object.entries(demoRisk).sort((a,b)=>b[1].totalRating/b[1].count-a[1].totalRating/a[1].count).map(([demo,s])=>{
+            const avgR=(s.totalRating/s.count).toFixed(1);const topP=Object.entries(s.problems).sort((a,b)=>b[1]-a[1])[0];
+            const o50pct=((s.o50/s.count)*100).toFixed(0);
+            return(<div key={demo} style={{padding:12,borderRadius:10,border:"1px solid rgba(0,0,0,.04)"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+                <span style={{fontWeight:700,fontSize:13}}>{demo}</span>
+                <div style={{display:"flex",gap:8}}>
+                  <span style={{fontSize:10,padding:"2px 8px",borderRadius:100,background:avgR>7?"#C0392B":avgR>5?"#E67E22":"#27AE60",color:"#fff",fontWeight:700}}>{avgR}/10 broken</span>
+                  <span style={{fontSize:10,color:"#999"}}>{s.count} people</span>
+                </div>
+              </div>
+              <div style={{fontSize:11,color:"#6B6B6B"}}>{o50pct}% paying &gt;40% income to rent · Top issue: {topP?topP[0]:"—"}</div>
+            </div>);
+          })}
+        </div>
+      </div>
+      {/* Guarantor analysis */}
+      <div className="card"><p className="label">Access barriers</p>
+        <div style={{fontSize:12,lineHeight:1.8,marginTop:8}}>
+          {(()=>{const noG=data.filter(r=>r.hasGuarantor==="No").length;const nonUK=data.filter(r=>r.ukNational==="No").length;const onBen=data.filter(r=>r.incomeSource==="Benefits").length;
+            return(<>
+              <div style={{marginBottom:6}}><b>{noG}</b> respondents ({((noG/n)*100).toFixed(0)}%) have <b>no UK guarantor</b> — a major barrier to securing rental properties.</div>
+              <div style={{marginBottom:6}}><b>{nonUK}</b> ({((nonUK/n)*100).toFixed(0)}%) are <b>non-UK nationals</b> — facing additional documentation and discrimination hurdles.</div>
+              <div><b>{onBen}</b> ({((onBen/n)*100).toFixed(0)}%) rely on <b>benefits</b> as primary income — despite DSS discrimination being ruled unlawful.</div>
+            </>);
+          })()}
+        </div>
+      </div>
+    </div>}
+
+    {/* === INTERVENTIONS === */}
+    {view==="interventions"&&<div>
+      <div className="card" style={{marginBottom:14}}>
+        <p className="label">Proposed interventions — RentShield features & policy mandates</p>
+        <p style={{fontSize:12,color:"#6B6B6B",marginBottom:14}}>Each problem generates two proposals: a commercial product feature for RentShield and a government-level policy mandate. Ranked by report frequency.</p>
+        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+          {interventions.map((iv,i)=>(
+            <div key={iv.prob} style={{padding:16,borderRadius:12,border:"1px solid rgba(0,0,0,.06)",background:i===0?"rgba(0,0,0,.02)":"transparent"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
+                <div>
+                  <span style={{fontWeight:700,fontSize:14}}>{iv.prob}</span>
+                  <span style={{fontSize:10,color:"#999",marginLeft:8}}>{iv.count} reports ({iv.pct}%) · {iv.affected} regions</span>
+                </div>
+                <div style={{display:"flex",gap:4}}>
+                  {iv.isEasy&&<span style={{fontSize:9,padding:"2px 8px",borderRadius:100,background:"rgba(39,174,96,.1)",color:"#27AE60",fontWeight:700}}>SOLVABLE</span>}
+                  {iv.isProfit&&<span style={{fontSize:9,padding:"2px 8px",borderRadius:100,background:"rgba(41,128,185,.1)",color:"#2980B9",fontWeight:700}}>MARKET OPP</span>}
+                </div>
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+                <div style={{padding:10,borderRadius:8,background:"rgba(0,0,0,.02)"}}>
+                  <div style={{fontWeight:700,fontSize:10,color:"#1A1A1A",marginBottom:4}}>🛡️ RENTSHIELD FEATURE</div>
+                  <div style={{fontSize:12,lineHeight:1.5}}>{iv.shield}</div>
+                </div>
+                <div style={{padding:10,borderRadius:8,background:"rgba(0,0,0,.02)"}}>
+                  <div style={{fontWeight:700,fontSize:10,color:"#1A1A1A",marginBottom:4}}>🏛️ POLICY MANDATE</div>
+                  <div style={{fontSize:12,lineHeight:1.5}}>{iv.mandate}</div>
+                </div>
+              </div>
+              {/* Solutions from respondents */}
+              {(()=>{const sols=fixes.filter(f=>txts.find(t=>t.area===f.area&&(t.problems||[]).includes(iv.prob)));
+                return sols.length>0?(<div style={{marginTop:8,paddingTop:8,borderTop:"1px solid rgba(0,0,0,.04)"}}>
+                  <span style={{fontSize:10,fontWeight:700,color:"#999"}}>RESPONDENT PROPOSALS:</span>
+                  {sols.slice(0,3).map((s,j)=><div key={j} style={{fontSize:11,color:"#555",marginTop:2}}>• {s.text.slice(0,150)}</div>)}
+                </div>):null;
+              })()}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>}
+
+    {/* === EXTERNAL SOURCES (Scanner) === */}
+    {view==="scanner"&&<div>
+      <div className="card" style={{marginBottom:14}}>
+        <p className="label">External source scanner</p>
+        <p style={{fontSize:12,color:"#6B6B6B",marginBottom:10}}>Scrapes Reddit, Google News, and Companies House to cross-reference survey findings with public discourse.</p>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:14}}>
+          <select value={intR} onChange={e=>setIntR(e.target.value)} style={{padding:"8px 14px",borderRadius:10,border:"1.5px solid #E0E0E0",fontFamily:"inherit",fontSize:12}}>
+            <option value="">All regions</option>{Object.keys(rC).map(r=><option key={r} value={r}>{r}</option>)}
+          </select>
+          <button className="btn primary sm" onClick={()=>runScan(intR)} disabled={intL||n===0}>{intL?"Scanning…":"Run scan"}</button>
+          {intel?.lastRun&&<span style={{fontSize:11,color:"#999",alignSelf:"center"}}>Last: {new Date(intel.lastRun).toLocaleString()}</span>}
+        </div>
+      </div>
+      {intel?.scans?.length>0&&(()=>{const s=intel.scans[intel.scans.length-1];return(<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+        {s.reddit?.length>0&&<div className="card" style={{gridColumn:"1/-1"}}><p className="label">Reddit discourse ({s.reddit.length})</p>
+          <p style={{fontSize:11,color:"#6B6B6B",marginBottom:8}}>Public tenant experiences cross-referenced with survey problems</p>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,maxHeight:350,overflowY:"auto"}}>
+            {s.reddit.map((p,i)=>(<div key={i} style={{padding:10,borderRadius:8,border:"1px solid rgba(0,0,0,.04)",fontSize:11}}>
+              <div style={{fontWeight:700,marginBottom:3}}>{(p.title||"").slice(0,100)}</div>
+              {p.text&&<div style={{color:"#6B6B6B",marginBottom:4,lineHeight:1.5}}>{p.text.slice(0,120)}…</div>}
+              <div style={{fontSize:10,color:"#999"}}>r/{p.subreddit} · ⬆{p.score} · 💬{p.comments} {p.problem&&<span className="tag" style={{marginLeft:4}}>{p.problem}</span>}</div>
+              <a href={p.url} target="_blank" rel="noreferrer" style={{fontSize:10,color:"#555"}}>View →</a>
+            </div>))}
+          </div>
+        </div>}
+        {s.news?.length>0&&<div className="card" style={{gridColumn:"1/-1"}}><p className="label">News coverage ({s.news.length})</p>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+            {s.news.map((a,i)=>(<div key={i} style={{padding:10,borderRadius:8,border:"1px solid rgba(0,0,0,.04)",fontSize:11}}>
+              <div style={{fontWeight:700,marginBottom:2}}>{(a.title||"").slice(0,100)}</div>
+              <div style={{fontSize:10,color:"#999"}}>{a.publisher} · {a.date?new Date(a.date).toLocaleDateString():""}</div>
+              <a href={a.url} target="_blank" rel="noreferrer" style={{fontSize:10,color:"#555"}}>Read →</a>
+            </div>))}
+          </div>
+        </div>}
+        {s.companies?.length>0&&<div className="card" style={{gridColumn:"1/-1"}}><p className="label">Companies House ({s.companies.length})</p>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6}}>
+            {s.companies.map((c,i)=>(<div key={i} style={{padding:8,borderRadius:6,border:"1px solid rgba(0,0,0,.04)",fontSize:10}}>
+              <div style={{fontWeight:700,fontSize:11}}>{c.name}</div>
+              <div style={{color:"#999"}}>#{c.number} · {c.status}</div>
+              <a href={c.url} target="_blank" rel="noreferrer" style={{color:"#555"}}>View →</a>
+            </div>))}
+          </div>
+        </div>}
+      </div>);})()}
+    </div>}
+  </div>);
+}
 
 /* ═══════════ RESPONSES TAB — Organised, timestamped, navigatable ═══════════ */
 function ResponsesTab({txts,fixes,rC,pC,n,avg,o4,pD,agD}){
