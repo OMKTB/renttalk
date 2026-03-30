@@ -88,7 +88,7 @@ function analyse(text){
 /* ═ EXCEL ═ */
 function toExcel(data,pC,pL,reC,iC,anC){
   const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(data.map((r,i)=>({"#":i+1,Age:r.age,Region:r.region,Area:r.area,Situation:r.situation,Rent:r.rent,"Income%":r.pctIncome,Response:r.freeText,Problems:(r.problems||[]).join("; "),Solution:r.proposedFix,"Rent Control":r.rentControl,Rating:r.brokenRating,"Positive":r.positive||"","Past Areas":(r.pastAreas||[]).join("; ")}))),"Responses");
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(data.map((r,i)=>({"#":i+1,Age:r.age,Employment:r.employment||"",Region:r.region,Area:r.area,"Past Areas":(r.pastAreas||[]).join("; "),Situation:r.situation,"Property Type":r.propertyType||"","Tenancy Length":r.tenancyLength||"","How Found":r.howFound||"",Rent:r.rent,"Income%":r.pctIncome,"Deposit Issue":r.depositIssue||"",Benefits:r.benefits||"","Condition Rating":r.conditionRating||"","Landlord Rating":r.landlordRating||"",Response:r.freeText,Positive:r.positive||"",Problems:(r.problems||[]).join("; "),Solution:r.proposedFix,"Rent Control":r.rentControl,Rating:r.brokenRating}))),"Responses");
   const pD=Object.entries(pC).map(([k,v])=>({Problem:k,Count:v,Category:CATS[k]||"",Laws:LEGAL[k]?.laws?.join("; ")||"",Impact:LEGAL[k]?.impact||""}));
   XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(pD),"Problems");
   const rD=Object.entries(pL).map(([loc,probs])=>({Location:loc,Total:Object.values(probs).reduce((s,v)=>s+v,0),Top:Object.entries(probs).sort((a,b)=>b[1]-a[1])[0]?.[0]||"",All:Object.entries(probs).map(([p,c])=>`${p}(${c})`).join("; "),Council:RMETA[loc]?.council||""}));
@@ -144,27 +144,59 @@ function PinGate({onOk,onBack}){
 }
 
 /* ═══════════ SURVEY ═══════════ */
+
+/* ═══════════ EXPANDED SURVEY ═══════════ */
 function Survey({onAdmin}){
   const [s,setS]=useState(0);
-  const [d,setD]=useState({age:"",region:"",area:"",pastAreas:[],situation:"",rent:"",pctIncome:"",freeText:"",positive:"",problems:[],answers:{},proposedFix:"",rentControl:"",brokenRating:5});
-  const [sub,setSub]=useState(false);const [done,setDone]=useState(false);const [err,setErr]=useState(false);
+  const [d,setD]=useState({
+    age:"",employment:"",situation:"",region:"",area:"",pastAreas:[],
+    propertyType:"",bedrooms:"",tenancyLength:"",howFound:"",
+    rent:"",pctIncome:"",depositIssue:"",benefits:"",
+    freeText:"",positive:"",problems:[],
+    conditionRating:5,landlordRating:5,
+    aiQuestions:[],answers:{},
+    proposedFix:"",rentControl:"",brokenRating:5
+  });
+  const [sub,setSub]=useState(false);const [done,setDone]=useState(false);
+  const [err,setErr]=useState(false);const [aiLoad,setAiLoad]=useState(false);
   const u=(k,v)=>setD(p=>({...p,[k]:v}));const nx=()=>setS(x=>x+1);const bk=()=>setS(x=>x-1);
 
-  const doAnalyse=()=>{
+  // AI-personalised questions based on region + problems
+  const generateAIQuestions=async()=>{
+    setAiLoad(true);
     const pr=analyse(d.freeText);u("problems",pr);
-    // Generate contextual follow-ups based on problems
-    const qs=[];
-    if(pr.includes("Rental affordability"))qs.push({id:"q1",q:"How is affordability affecting your day-to-day?",o:["Skipping meals or essentials","Can't socialise anymore","Moved further from work","Considering leaving the area"]});
-    if(pr.includes("Poor conditions"))qs.push({id:"q2",q:"Have you reported the condition issues?",o:["Yes, landlord fixed it","Yes, but nothing happened","No, worried about eviction","Reported to council"]});
-    if(pr.includes("Landlord issues"))qs.push({id:"q3",q:"What best describes the situation?",o:["Completely unresponsive","Hostile or threatening","Enters without notice","Withholds deposit unfairly"]});
-    if(pr.includes("Tenure insecurity"))qs.push({id:"q4",q:"What's driving the insecurity?",o:["Received eviction notice","Landlord selling up","Short rolling tenancy","Fear of retaliatory eviction"]});
-    if(pr.includes("Market competition"))qs.push({id:"q5",q:"What's the competition been like?",o:["Properties gone in hours","Asked to pay months upfront","Dozens at every viewing","Bidding above asking"]});
-    if(qs.length<3){
-      if(!qs.find(q=>q.id==="qb1"))qs.push({id:"qb1",q:"How long have you experienced this?",o:["Less than 3 months","3–6 months","6–12 months","Over a year"]});
-      if(!qs.find(q=>q.id==="qb2"))qs.push({id:"qb2",q:"How much is this affecting your wellbeing?",o:["Minor inconvenience","Noticeable stress","Significant impact","Severely affecting me"]});
-      if(!qs.find(q=>q.id==="qb3"))qs.push({id:"qb3",q:"Have you sought help?",o:["Yes, friends/family","Citizens Advice","Legal advice","Not yet"]});
+    try{
+      const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:800,
+          messages:[{role:"user",content:`You are a UK housing researcher creating personalised follow-up questions for a renter survey.
+
+The respondent is: age ${d.age}, ${d.employment}, living in ${d.area} (${d.region}), ${d.situation}, paying ${d.rent} (${d.pctIncome} of income), ${d.propertyType}, tenancy ${d.tenancyLength}.
+
+Their main challenges: "${d.freeText}"
+Identified problems: ${pr.join(", ")}
+${d.positive?"Positives they mentioned: "+d.positive:""}
+
+Generate exactly 4 follow-up questions that are SPECIFIC to their region, situation and problems. Each question should help identify root causes and actionable data.
+
+Return ONLY valid JSON array:
+[{"id":"ai1","q":"question text","o":["option1","option2","option3","option4"]},...]
+
+Make questions conversational, empathetic, specific to ${d.region}. Reference local context (e.g. local councils, transport links, university towns, local market conditions).`}]})});
+      const data=await r.json();
+      const txt=data.content?.filter(c=>c.type==="text").map(c=>c.text).join("");
+      const qs=JSON.parse(txt.replace(/```json|```/g,"").trim());
+      u("aiQuestions",qs);
+    }catch(e){
+      // Fallback: generate contextual questions without AI
+      const qs=[];
+      if(pr.includes("Rental affordability"))qs.push({id:"f1",q:`In ${d.region}, how is affordability affecting your daily life?`,o:["Skipping meals or essentials","Can't socialise anymore","Moved further from work","Considering leaving the area"]});
+      if(pr.includes("Poor conditions"))qs.push({id:"f2",q:"Have you reported the condition issues?",o:["Yes, landlord fixed it","Yes, nothing happened","No, worried about eviction","Reported to council"]});
+      if(pr.includes("Landlord issues"))qs.push({id:"f3",q:"What best describes your landlord situation?",o:["Completely unresponsive","Hostile or threatening","Enters without notice","Withholds deposit"]});
+      if(pr.includes("Tenure insecurity"))qs.push({id:"f4",q:"What's driving the insecurity?",o:["Received eviction notice","Landlord selling up","Rolling monthly tenancy","Fear of retaliatory eviction"]});
+      while(qs.length<3)qs.push({id:"fb"+qs.length,q:"How severely is this affecting your wellbeing?",o:["Minor inconvenience","Noticeable stress","Significant impact","Severely affecting me"]});
+      u("aiQuestions",qs.slice(0,4));
     }
-    u("questions",qs.slice(0,3));nx();
+    setAiLoad(false);nx();
   };
 
   const submit=async()=>{setSub(true);setErr(false);const ok=await cloudAppend(d);setSub(false);ok?setDone(true):setErr(true);};
@@ -177,20 +209,19 @@ function Survey({onAdmin}){
   if(done)return(<><Nav/><div style={{maxWidth:440,margin:"0 auto",textAlign:"center",padding:"100px 20px"}}>
     <div style={{fontSize:42,marginBottom:16}}>✓</div>
     <h2 className="serif" style={{fontSize:24,marginBottom:8}}>Thank you</h2>
-    <p style={{color:"#6B6B6B",fontSize:15,lineHeight:1.7}}>Your response is recorded. It genuinely helps.</p>
+    <p style={{color:"#6B6B6B",fontSize:15,lineHeight:1.7}}>Your response has been recorded and will shape real research into UK rental challenges.</p>
   </div></>);
 
-  const tot=7,pct=((s+1)/tot)*100;
+  const tot=8,pct=((s+1)/tot)*100;
   return(<><Nav/><div style={{maxWidth:500,margin:"0 auto",padding:"24px 20px 100px"}}>
-    {/* Progress */}
     <div style={{marginBottom:28}}><div style={{height:2,borderRadius:1,background:"rgba(0,0,0,.06)"}}><div style={{height:"100%",borderRadius:1,background:"#1A1A1A",width:`${pct}%`,transition:"width .3s"}}/></div>
-    <div style={{display:"flex",justifyContent:"space-between",marginTop:6}}><span style={{fontSize:11,fontWeight:700,color:"#1A1A1A",letterSpacing:".04em"}}>{s+1} of {tot}</span><span style={{fontSize:11,color:"rgba(0,0,0,.25)"}}>{Math.round(pct)}%</span></div></div>
+    <div style={{display:"flex",justifyContent:"space-between",marginTop:6}}><span style={{fontSize:11,fontWeight:700,letterSpacing:".04em"}}>{s+1} of {tot}</span><span style={{fontSize:11,color:"rgba(0,0,0,.25)"}}>{Math.round(pct)}%</span></div></div>
 
     {/* STEP 0: Welcome */}
     {s===0&&<div className="fade"><div className="card" style={{textAlign:"center",padding:"44px 28px"}}>
       <h1 className="serif" style={{fontSize:26,lineHeight:1.3,marginBottom:12}}>Your renting experience<br/>matters to us</h1>
-      <p style={{color:"#6B6B6B",fontSize:14,lineHeight:1.7,maxWidth:380,margin:"0 auto 8px"}}>An independent study into rental challenges facing 18–30 year olds across the UK. Anonymous. Takes 2 minutes.</p>
-      <p style={{fontSize:12,color:"rgba(0,0,0,.2)",marginBottom:28}}>Your answers shape real research</p>
+      <p style={{color:"#6B6B6B",fontSize:14,lineHeight:1.7,maxWidth:380,margin:"0 auto 8px"}}>An independent study into rental challenges facing 18–30 year olds across the UK. Anonymous. ~3 minutes.</p>
+      <p style={{fontSize:12,color:"rgba(0,0,0,.2)",marginBottom:28}}>Questions adapt to your area and situation</p>
       <button className="btn primary" onClick={nx} style={{width:"100%"}}>Let's go</button>
     </div></div>}
 
@@ -199,61 +230,89 @@ function Survey({onAdmin}){
       <p className="label">About you</p>
       <h2 className="serif q">How old are you?</h2>
       <Chips items={Array.from({length:13},(_,i)=>String(i+18))} sel={d.age} set={v=>u("age",v)}/>
-      <h2 className="serif q" style={{marginTop:22}}>What's your living situation?</h2>
-      <Chips items={["Renting privately","House/flat share","Social housing","Student accommodation","Living with family","Other"]} sel={d.situation} set={v=>u("situation",v)}/>
-    </div><Btns bk={null} nx={nx} dis={!d.age||!d.situation}/></div>}
+      <h2 className="serif q" style={{marginTop:22}}>What's your employment status?</h2>
+      <Chips items={["Full-time employed","Part-time employed","Self-employed","Student","Unemployed","Zero-hours contract","Apprentice","Carer"]} sel={d.employment} set={v=>u("employment",v)}/>
+      <h2 className="serif q" style={{marginTop:22}}>What's your current living situation?</h2>
+      <Chips items={["Renting alone","Renting with partner","House/flat share","Social housing","Student accommodation","Living with family","Lodger","Temporary/hostel"]} sel={d.situation} set={v=>u("situation",v)}/>
+    </div><Btns bk={null} nx={nx} dis={!d.age||!d.employment||!d.situation}/></div>}
 
-    {/* STEP 2: Location — current + past */}
+    {/* STEP 2: Location */}
     {s===2&&<div className="fade"><div className="card">
-      <p className="label">Where you live</p>
+      <p className="label">Where you rent</p>
       <h2 className="serif q">Which region are you in?</h2>
       <Chips items={Object.keys(UK)} sel={d.region} set={v=>{u("region",v);u("area","");}}/>
       {d.region&&<><h2 className="serif q" style={{marginTop:20}}>Which area?</h2>
       <Chips items={UK[d.region]} sel={d.area} set={v=>u("area",v)}/></>}
-      <h2 className="serif q" style={{marginTop:22}}>Any previous areas you've rented in? <span style={{fontWeight:400,color:"#999",fontSize:13}}>(optional)</span></h2>
+      <h2 className="serif q" style={{marginTop:22}}>Rented anywhere else before? <span style={{fontWeight:400,color:"#999",fontSize:13}}>(select all)</span></h2>
       <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-        {Object.values(UK).flat().filter(a=>a!==d.area).slice(0,30).map(a=>(
-          <button key={a} className={`chip ${d.pastAreas.includes(a)?"on":""}`} onClick={()=>u("pastAreas",d.pastAreas.includes(a)?d.pastAreas.filter(x=>x!==a):[...d.pastAreas,a])}>{a}</button>
+        {Object.entries(UK).flatMap(([reg,areas])=>areas.filter(a=>a!==d.area).map(a=>({a,reg}))).slice(0,40).map(({a})=>(
+          <button key={a} className={`chip ${d.pastAreas.includes(a)?"on":""}`} style={{fontSize:12,padding:"7px 14px"}}
+            onClick={()=>u("pastAreas",d.pastAreas.includes(a)?d.pastAreas.filter(x=>x!==a):[...d.pastAreas,a])}>{a}</button>
         ))}
       </div>
     </div><Btns bk={bk} nx={nx} dis={!d.region||!d.area}/></div>}
 
-    {/* STEP 3: Financial */}
+    {/* STEP 3: Your property */}
     {s===3&&<div className="fade"><div className="card">
-      <p className="label">The financial picture</p>
-      <h2 className="serif q">What's your monthly rent?</h2>
-      <Chips items={["Under £400","£400–£600","£600–£800","£800–£1,000","£1,000–£1,500","£1,500–£2,000","£2,000+","Prefer not to say"]} sel={d.rent} set={v=>u("rent",v)}/>
-      <h2 className="serif q" style={{marginTop:22}}>What share of your income goes to rent?</h2>
-      <Chips items={["Under 20%","20–30%","30–40%","40–50%","Over 50%","Not sure"]} sel={d.pctIncome} set={v=>u("pctIncome",v)}/>
-    </div><Btns bk={bk} nx={nx} dis={!d.rent||!d.pctIncome}/></div>}
+      <p className="label">Your property</p>
+      <h2 className="serif q">What type of property?</h2>
+      <Chips items={["Studio","1-bed flat","2-bed flat","3+ bed flat","Terraced house","Semi-detached","Detached","HMO / shared house","Bedsit","Room in family home"]} sel={d.propertyType} set={v=>u("propertyType",v)}/>
+      <h2 className="serif q" style={{marginTop:22}}>How long have you been in this tenancy?</h2>
+      <Chips items={["Under 3 months","3–6 months","6–12 months","1–2 years","2–5 years","5+ years"]} sel={d.tenancyLength} set={v=>u("tenancyLength",v)}/>
+      <h2 className="serif q" style={{marginTop:22}}>How did you find it?</h2>
+      <Chips items={["Rightmove/Zoopla","Letting agent","SpareRoom","Facebook/Gumtree","Word of mouth","Council allocation","University","Other"]} sel={d.howFound} set={v=>u("howFound",v)}/>
+    </div><Btns bk={bk} nx={nx} dis={!d.propertyType||!d.tenancyLength||!d.howFound}/></div>}
 
-    {/* STEP 4: Experience — challenges + positives */}
+    {/* STEP 4: Financial */}
     {s===4&&<div className="fade"><div className="card">
-      <p className="label">Your experience</p>
-      <h2 className="serif q">What challenges do you face with renting?</h2>
-      <p style={{color:"#6B6B6B",fontSize:13,marginBottom:14}}>Be as specific as you like — affordability, conditions, landlords, competition, location, anything.</p>
-      <textarea className="ta" value={d.freeText} onChange={e=>u("freeText",e.target.value)} placeholder="What's been difficult…" style={{minHeight:140}}/>
-      <h2 className="serif q" style={{marginTop:22}}>Anything positive about your renting experience? <span style={{fontWeight:400,color:"#999",fontSize:13}}>(optional)</span></h2>
-      <textarea className="ta" value={d.positive} onChange={e=>u("positive",e.target.value)} placeholder="Good landlord, nice area, flexible lease…" style={{minHeight:80}}/>
-    </div><div style={{display:"flex",gap:10,marginTop:20}}><button className="btn ghost" onClick={bk}>← Back</button><button className="btn primary" onClick={doAnalyse} disabled={d.freeText.trim().length<10} style={{flex:1}}>Continue</button></div></div>}
+      <p className="label">The financial picture</p>
+      <h2 className="serif q">Monthly rent?</h2>
+      <Chips items={["Under £400","£400–£600","£600–£800","£800–£1,000","£1,000–£1,500","£1,500–£2,000","£2,000+","Prefer not to say"]} sel={d.rent} set={v=>u("rent",v)}/>
+      <h2 className="serif q" style={{marginTop:22}}>What share of income goes to rent?</h2>
+      <Chips items={["Under 20%","20–30%","30–40%","40–50%","Over 50%","Not sure"]} sel={d.pctIncome} set={v=>u("pctIncome",v)}/>
+      <h2 className="serif q" style={{marginTop:22}}>Any deposit difficulties?</h2>
+      <Chips items={["No issues","Struggled to afford it","Deposit not protected","Previous deposit withheld","Needed guarantor","Paid multiple months upfront","N/A"]} sel={d.depositIssue} set={v=>u("depositIssue",v)}/>
+      <h2 className="serif q" style={{marginTop:22}}>Receiving any housing support?</h2>
+      <Chips items={["No benefits","Universal Credit (housing element)","Housing Benefit","Local Housing Allowance","Discretionary Housing Payment","Other support","Prefer not to say"]} sel={d.benefits} set={v=>u("benefits",v)}/>
+    </div><Btns bk={bk} nx={nx} dis={!d.rent||!d.pctIncome||!d.depositIssue||!d.benefits}/></div>}
 
-    {/* STEP 5: Follow-ups */}
-    {s===5&&<div className="fade">
-      <div className="card" style={{marginBottom:12}}><p className="label">We identified these themes</p>
-        <div style={{display:"flex",flexWrap:"wrap",gap:6}}>{d.problems.map((p,i)=>(<span key={i} className="tag">{p}</span>))}</div>
+    {/* STEP 5: Challenges + condition/landlord ratings */}
+    {s===5&&<div className="fade"><div className="card">
+      <p className="label">Your experience</p>
+      <h2 className="serif q">What challenges do you face renting?</h2>
+      <p style={{color:"#6B6B6B",fontSize:13,marginBottom:14}}>Be specific — affordability, conditions, landlords, agents, competition, discrimination, anything.</p>
+      <textarea className="ta" value={d.freeText} onChange={e=>u("freeText",e.target.value)} placeholder="Describe what's been difficult…" style={{minHeight:140}}/>
+      <h2 className="serif q" style={{marginTop:22}}>Anything positive? <span style={{fontWeight:400,color:"#999",fontSize:13}}>(optional but valuable)</span></h2>
+      <textarea className="ta" value={d.positive} onChange={e=>u("positive",e.target.value)} placeholder="Good landlord, nice neighbours, flexible lease…" style={{minHeight:80}}/>
+      <h2 className="serif q" style={{marginTop:22}}>Rate your property's condition</h2>
+      <input type="range" min={1} max={10} value={d.conditionRating} onChange={e=>u("conditionRating",Number(e.target.value))} style={{width:"100%",accentColor:"#1A1A1A"}}/>
+      <div style={{display:"flex",justifyContent:"space-between",fontSize:12,color:"#999",marginTop:4}}><span>1 = Terrible</span><span className="serif" style={{fontSize:22,color:"#1A1A1A"}}>{d.conditionRating}</span><span>10 = Excellent</span></div>
+      <h2 className="serif q" style={{marginTop:22}}>Rate your landlord/agent</h2>
+      <input type="range" min={1} max={10} value={d.landlordRating} onChange={e=>u("landlordRating",Number(e.target.value))} style={{width:"100%",accentColor:"#1A1A1A"}}/>
+      <div style={{display:"flex",justifyContent:"space-between",fontSize:12,color:"#999",marginTop:4}}><span>1 = Terrible</span><span className="serif" style={{fontSize:22,color:"#1A1A1A"}}>{d.landlordRating}</span><span>10 = Excellent</span></div>
+    </div><div style={{display:"flex",gap:10,marginTop:20}}><button className="btn ghost" onClick={bk}>← Back</button>
+      <button className="btn primary" onClick={generateAIQuestions} disabled={d.freeText.trim().length<10||aiLoad} style={{flex:1}}>{aiLoad?"Personalising questions…":"Continue"}</button>
+    </div></div>}
+
+    {/* STEP 6: AI-personalised follow-ups */}
+    {s===6&&<div className="fade">
+      <div className="card" style={{marginBottom:12}}>
+        <p className="label">Based on your situation in {d.area}</p>
+        <div style={{display:"flex",flexWrap:"wrap",gap:4}}>{d.problems.map((p,i)=>(<span key={i} className="tag">{p}</span>))}</div>
       </div>
-      {(d.questions||[]).map((q,qi)=>(<div key={q.id} className="card" style={{marginBottom:10}}>
-        <p className="label">Follow-up {qi+1}</p>
+      {(d.aiQuestions||[]).map((q,qi)=>(<div key={q.id} className="card" style={{marginBottom:10}}>
+        <p className="label">Question {qi+1} of {d.aiQuestions.length}</p>
         <h2 className="serif q">{q.q}</h2>
         <div style={{display:"flex",flexDirection:"column",gap:6}}>{q.o.map(o=>(<button key={o} className={`chip full ${d.answers[q.id]===o?"on":""}`} onClick={()=>u("answers",{...d.answers,[q.id]:o})}>{o}</button>))}</div>
       </div>))}
-    <Btns bk={bk} nx={nx} dis={Object.keys(d.answers).length<(d.questions||[]).length}/></div>}
+    <Btns bk={bk} nx={nx} dis={Object.keys(d.answers).length<(d.aiQuestions||[]).length}/></div>}
 
-    {/* STEP 6: Solutions + rating */}
-    {s===6&&<div className="fade">
-      <div className="card" style={{marginBottom:12}}><p className="label">Looking forward</p>
-        <h2 className="serif q">What changes would actually improve things?</h2>
-        <textarea className="ta" value={d.proposedFix} onChange={e=>u("proposedFix",e.target.value)} placeholder="Rent caps, better inspections, longer tenancies…"/>
+    {/* STEP 7: Solutions + policy + rating */}
+    {s===7&&<div className="fade">
+      <div className="card" style={{marginBottom:12}}>
+        <p className="label">Looking forward</p>
+        <h2 className="serif q">What changes would genuinely improve things?</h2>
+        <textarea className="ta" value={d.proposedFix} onChange={e=>u("proposedFix",e.target.value)} placeholder="Rent caps, better inspections, longer tenancies, more social housing…"/>
       </div>
       <div className="card" style={{marginBottom:12}}>
         <h2 className="serif q">Do you support government rent controls?</h2>
@@ -271,7 +330,6 @@ function Survey({onAdmin}){
   </div></>);
 }
 
-/* ═══════════ DASHBOARD ═══════════ */
 function Dash({data,loading,reload,onClear,onBack}){
   const n=data.length;
   const [tab,setTab]=useState("responses");
@@ -299,7 +357,7 @@ function Dash({data,loading,reload,onClear,onBack}){
     (r.problems||[]).forEach(p=>{pC[p]=(pC[p]||0)+1;const c=CATS[p]||"General";catC[c]=(catC[c]||0)+1;});
     tR+=Number(r.brokenRating)||0;
     if(r.pctIncome==="40–50%"||r.pctIncome==="Over 50%")o4++;
-    if(r.freeText)txts.push({text:r.freeText,positive:r.positive,area:r.area||r.region,age:r.age,rent:r.rent,problems:r.problems,situation:r.situation,pctIncome:r.pctIncome,answers:r.answers,pastAreas:r.pastAreas});
+    if(r.freeText)txts.push({text:r.freeText,positive:r.positive,area:r.area||r.region,age:r.age,rent:r.rent,problems:r.problems,situation:r.situation,employment:r.employment,pctIncome:r.pctIncome,answers:r.answers,pastAreas:r.pastAreas,propertyType:r.propertyType,tenancyLength:r.tenancyLength,conditionRating:r.conditionRating,landlordRating:r.landlordRating,benefits:r.benefits,depositIssue:r.depositIssue});
     if(r.proposedFix)fixes.push({text:r.proposedFix,area:r.area||r.region,rating:r.brokenRating});
     const loc=r.area||r.region;if(loc)(r.problems||[]).forEach(p=>{if(!pL[loc])pL[loc]={};pL[loc][p]=(pL[loc][p]||0)+1;});
     if(r.answers)Object.values(r.answers).forEach(a=>{anC[a]=(anC[a]||0)+1;});
@@ -348,10 +406,11 @@ function Dash({data,loading,reload,onClear,onBack}){
           {txts.map((r,i)=>(
             <div key={i} className="card" style={{padding:"18px 22px"}}>
               <div style={{display:"flex",justifyContent:"space-between",marginBottom:8,flexWrap:"wrap",gap:6}}>
-                <span style={{fontSize:12,fontWeight:700}}>Age {r.age} · {r.situation}</span>
-                <span style={{fontSize:11,color:"#999"}}>📍 {r.area} · {r.rent} · {r.pctIncome}</span>
+                <span style={{fontSize:12,fontWeight:700}}>Age {r.age} · {r.employment} · {r.situation}</span>
+                <span style={{fontSize:11,color:"#999"}}>📍 {r.area} · {r.propertyType} · {r.rent} · {r.pctIncome}</span>
               </div>
               <div className="serif" style={{fontSize:15,lineHeight:1.65,marginBottom:10,fontStyle:"italic",color:"#333"}}>"{r.text}"</div>
+              {(r.conditionRating||r.landlordRating)&&<div style={{fontSize:11,color:"#999",marginBottom:6}}>Condition: {r.conditionRating}/10 · Landlord: {r.landlordRating}/10{r.tenancyLength?" · "+r.tenancyLength:""}{r.depositIssue&&r.depositIssue!=="No issues"?" · Deposit: "+r.depositIssue:""}{r.benefits&&r.benefits!=="No benefits"?" · "+r.benefits:""}</div>}
               {r.positive&&<div style={{fontSize:13,lineHeight:1.6,color:"#6B6B6B",marginBottom:10,paddingLeft:12,borderLeft:"2px solid #E0E0E0"}}>
                 <span style={{fontWeight:700,fontSize:11,color:"#999",display:"block",marginBottom:2}}>POSITIVE</span>{r.positive}</div>}
               {r.problems?.length>0&&<div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:6}}>
