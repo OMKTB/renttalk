@@ -315,10 +315,13 @@ def run_scan(scan_number):
     try:
         req = urllib.request.Request(INTEL_BLOB, headers={"Accept":"application/json"})
         existing = json.loads(urllib.request.urlopen(req, context=ctx).read())
+        # Preserve intel_package if it exists
+        pkg = existing.get("intel_package")
         existing["social_scans"] = data["scans"][-5:]
         existing["alerts"] = data["alerts"][-10:]
         existing["agencies"] = data.get("agencies",[])[-20:]
         existing["last_social_scan"] = scan["ts"]
+        if pkg: existing["intel_package"] = pkg
         put_req = urllib.request.Request(INTEL_BLOB, json.dumps(existing).encode(), method="PUT",
             headers={"Content-Type":"application/json","Accept":"application/json"})
         urllib.request.urlopen(put_req, context=ctx)

@@ -1,96 +1,101 @@
 {
-  "generated": "2026-03-30T17:01:03.336971",
+  "generated": "2026-03-30T17:44:33.179025",
   "cross_reference": {
     "London": {
-      "social_mentions": 4,
+      "social_mentions": 10,
       "survey_responses": 7,
       "region": "London",
       "survey_problems": {
-        "Rental affordability": 6,
-        "Poor conditions": 3,
-        "Discrimination": 3,
-        "High upfront costs": 5,
-        "Landlord issues": 2,
-        "Tenure insecurity": 2,
-        "Mental health": 1,
-        "Market competition": 1
+        "Poor conditions": 2,
+        "High upfront costs": 6,
+        "Discrimination": 2,
+        "Contractor/maintenance access": 1,
+        "Landlord issues": 1,
+        "Mental health impact": 1,
+        "Market competition": 1,
+        "Housing supply concerns": 1,
+        "Tenure insecurity": 1
       },
       "alignment": "confirmed"
     },
     "Manchester": {
-      "social_mentions": 2,
+      "social_mentions": 5,
       "survey_responses": 10,
       "region": "North West",
       "survey_problems": {
-        "Rental affordability": 9,
-        "Poor conditions": 2,
-        "Landlord issues": 2,
+        "Poor conditions": 3,
+        "Landlord issues": 1,
+        "Contractor/maintenance access": 1,
         "Market competition": 2,
-        "Discrimination": 2,
-        "High upfront costs": 1,
-        "Mental health": 1
+        "No-pet policies": 1,
+        "Property management failures": 1,
+        "Rental affordability": 1,
+        "Discrimination": 1,
+        "General rental concern": 2,
+        "Positive experience": 1
       },
       "alignment": "confirmed"
     },
     "Cambridge": {
-      "social_mentions": 1,
+      "social_mentions": 2,
       "survey_responses": 1,
       "region": "East of England",
       "survey_problems": {
         "Rental affordability": 1,
-        "Unable to save": 1
+        "Unable to save/build future": 1
       },
       "alignment": "confirmed"
     },
     "Bristol": {
-      "social_mentions": 2,
+      "social_mentions": 5,
       "survey_responses": 1,
       "region": "South West",
-      "survey_problems": {
-        "Energy & bills": 1,
-        "Rental affordability": 1
-      },
-      "alignment": "confirmed"
-    },
-    "Belfast": {
-      "social_mentions": 2,
-      "survey_responses": 0,
-      "region": "Northern Ireland",
-      "survey_problems": {},
-      "alignment": "social_only"
-    },
-    "Birmingham": {
-      "social_mentions": 2,
-      "survey_responses": 1,
-      "region": "West Midlands",
-      "survey_problems": {
-        "Rental affordability": 1,
-        "Energy & bills": 1
-      },
-      "alignment": "confirmed"
-    },
-    "Leeds": {
-      "social_mentions": 2,
-      "survey_responses": 1,
-      "region": "Yorkshire & Humber",
       "survey_problems": {
         "Poor conditions": 1,
         "Energy & bills": 1
       },
       "alignment": "confirmed"
     },
+    "Belfast": {
+      "social_mentions": 5,
+      "survey_responses": 0,
+      "region": "Northern Ireland",
+      "survey_problems": {},
+      "alignment": "social_only"
+    },
+    "Birmingham": {
+      "social_mentions": 5,
+      "survey_responses": 1,
+      "region": "West Midlands",
+      "survey_problems": {
+        "Energy & bills": 1
+      },
+      "alignment": "confirmed"
+    },
+    "Leeds": {
+      "social_mentions": 5,
+      "survey_responses": 1,
+      "region": "Yorkshire & Humber",
+      "survey_problems": {
+        "Poor conditions": 1
+      },
+      "alignment": "confirmed"
+    },
     "Liverpool": {
-      "social_mentions": 2,
+      "social_mentions": 5,
       "survey_responses": 10,
       "region": "North West",
       "survey_problems": {
-        "Rental affordability": 9,
-        "Poor conditions": 2,
-        "Landlord issues": 2,
+        "Poor conditions": 3,
+        "Landlord issues": 1,
+        "Contractor/maintenance access": 1,
         "Market competition": 2,
-        "Discrimination": 2,
-        "High upfront costs": 1,
-        "Mental health": 1
+        "No-pet policies": 1,
+        "Property management failures": 1,
+        "Rental affordability": 1,
+        "Discrimination": 1,
+        "General rental concern": 2,
+        "Positive experience": 1
       },
       "alignment": "confirmed"
     }
@@ -197,113 +202,154 @@
       "locations": [],
       "sub": "LegalAdviceUK",
       "score": 0
-    },
-    {
-      "type": "news",
-      "title": "Damp and mouldy homes still an issue as Awaab\u2019s Law comes in, campaigners warn - London Evening Standard",
-      "url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxONDYzWEkwVklYR1dGalJwNU5YUEVYTFR1Tms2ZDdWeF90bW1ZczRfeEU1TTRsNEtQTzB2UFlxTlExY1lDbGlYR3owbE5yZXFwbl9YYnlfNlVQbFgxZVJFWHVZQXdmNlZib2hQa1JrNkYteFFVdTNhYWt4YUlkRWJTalU1Yw?oc=5",
-      "publisher": "London Evening Standard",
-      "sentiment": "negative",
-      "locations": [
-        "London"
-      ]
-    },
-    {
-      "type": "news",
-      "title": "Damp and mouldy homes still an issue as Awaab\u2019s Law comes in, campaigners warn - London Evening Standard",
-      "url": "https://news.google.com/rss/articles/CBMigwFBVV95cUxONDYzWEkwVklYR1dGalJwNU5YUEVYTFR1Tms2ZDdWeF90bW1ZczRfeEU1TTRsNEtQTzB2UFlxTlExY1lDbGlYR3owbE5yZXFwbl9YYnlfNlVQbFgxZVJFWHVZQXdmNlZib2hQa1JrNkYteFFVdTNhYWt4YUlkRWJTalU1Yw?oc=5",
-      "publisher": "London Evening Standard",
-      "sentiment": "negative",
-      "locations": [
-        "London"
-      ]
     }
   ],
   "indexes": {
     "problem_severity": {
       "Rental affordability": {
-        "score": 65.0,
-        "survey_reports": 22,
-        "survey_pct": 88.0,
-        "social_hits": 146,
+        "score": 30.6,
+        "survey_reports": 5,
+        "survey_pct": 19.2,
+        "social_hits": 363,
         "rank": 1
       },
-      "Landlord issues": {
-        "score": 29.0,
-        "survey_reports": 4,
-        "survey_pct": 16.0,
-        "social_hits": 293,
+      "High upfront costs": {
+        "score": 29.5,
+        "survey_reports": 6,
+        "survey_pct": 23.1,
+        "social_hits": 40,
         "rank": 2
       },
-      "Market competition": {
-        "score": 24.8,
-        "survey_reports": 4,
-        "survey_pct": 16.0,
-        "social_hits": 36,
+      "Landlord issues": {
+        "score": 26.8,
+        "survey_reports": 3,
+        "survey_pct": 11.5,
+        "social_hits": 735,
         "rank": 3
       },
-      "High upfront costs": {
-        "score": 22.8,
-        "survey_reports": 6,
-        "survey_pct": 24.0,
-        "social_hits": 16,
+      "Market competition": {
+        "score": 26.8,
+        "survey_reports": 3,
+        "survey_pct": 11.5,
+        "social_hits": 89,
         "rank": 4
       },
-      "Discrimination": {
-        "score": 19.8,
-        "survey_reports": 6,
-        "survey_pct": 24.0,
-        "social_hits": 6,
+      "Poor conditions": {
+        "score": 24.4,
+        "survey_reports": 8,
+        "survey_pct": 30.8,
+        "social_hits": 10,
         "rank": 5
       },
-      "Poor conditions": {
-        "score": 19.2,
-        "survey_reports": 6,
-        "survey_pct": 24.0,
-        "social_hits": 4,
+      "Property management failures": {
+        "score": 22.9,
+        "survey_reports": 1,
+        "survey_pct": 3.8,
+        "social_hits": 502,
         "rank": 6
       },
-      "Energy & bills": {
-        "score": 13.2,
-        "survey_reports": 3,
-        "survey_pct": 12.0,
-        "social_hits": 4,
+      "Housing supply concerns": {
+        "score": 22.9,
+        "survey_reports": 1,
+        "survey_pct": 3.8,
+        "social_hits": 319,
         "rank": 7
       },
-      "Tenure insecurity": {
-        "score": 10.0,
-        "survey_reports": 2,
-        "survey_pct": 8.0,
-        "social_hits": 0,
+      "Letting agency issues": {
+        "score": 22.9,
+        "survey_reports": 1,
+        "survey_pct": 3.8,
+        "social_hits": 51,
         "rank": 8
       },
-      "Mental health": {
-        "score": 10.0,
-        "survey_reports": 2,
-        "survey_pct": 8.0,
-        "social_hits": 0,
+      "Discrimination": {
+        "score": 18.2,
+        "survey_reports": 4,
+        "survey_pct": 15.4,
+        "social_hits": 15,
         "rank": 9
       },
-      "Unable to save": {
-        "score": 10.0,
+      "Energy & bills": {
+        "score": 12.8,
         "survey_reports": 2,
-        "survey_pct": 8.0,
-        "social_hits": 0,
+        "survey_pct": 7.7,
+        "social_hits": 10,
         "rank": 10
+      },
+      "Contractor/maintenance access": {
+        "score": 11.8,
+        "survey_reports": 3,
+        "survey_pct": 11.5,
+        "social_hits": 0,
+        "rank": 11
+      },
+      "Positive experience": {
+        "score": 10.9,
+        "survey_reports": 1,
+        "survey_pct": 3.8,
+        "social_hits": 10,
+        "rank": 12
+      },
+      "General rental concern": {
+        "score": 9.8,
+        "survey_reports": 2,
+        "survey_pct": 7.7,
+        "social_hits": 0,
+        "rank": 13
+      },
+      "No-pet policies": {
+        "score": 7.9,
+        "survey_reports": 1,
+        "survey_pct": 3.8,
+        "social_hits": 0,
+        "rank": 14
+      },
+      "Mental health impact": {
+        "score": 7.9,
+        "survey_reports": 1,
+        "survey_pct": 3.8,
+        "social_hits": 0,
+        "rank": 15
+      },
+      "Unable to save/build future": {
+        "score": 7.9,
+        "survey_reports": 1,
+        "survey_pct": 3.8,
+        "social_hits": 0,
+        "rank": 16
+      },
+      "Tenure insecurity": {
+        "score": 7.9,
+        "survey_reports": 1,
+        "survey_pct": 3.8,
+        "social_hits": 0,
+        "rank": 17
       }
     },
     "regional_priority": {
       "North West": {
-        "score": 44.9,
+        "score": 53.9,
         "responses": 10,
         "avg_broken": 6.3,
-        "social_mentions": 4
+        "social_mentions": 10
       },
       "London": {
-        "score": 43.1,
+        "score": 52.1,
         "responses": 7,
         "avg_broken": 7.7,
-        "social_mentions": 4
+        "social_mentions": 10
+      },
+      "West Midlands": {
+        "score": 30.5,
+        "responses": 1,
+        "avg_broken": 7.0,
+        "social_mentions": 5
+      },
+      "Yorkshire & Humber": {
+        "score": 27.5,
+        "responses": 1,
+        "avg_broken": 6.0,
+        "social_mentions": 5
       },
       "North East": {
         "score": 26.0,
@@ -311,29 +357,23 @@
         "avg_broken": 8.0,
         "social_mentions": 0
       },
-      "West Midlands": {
-        "score": 26.0,
+      "South West": {
+        "score": 24.5,
         "responses": 1,
-        "avg_broken": 7.0,
-        "social_mentions": 2
+        "avg_broken": 5.0,
+        "social_mentions": 5
       },
-      "Yorkshire & Humber": {
+      "East of England": {
         "score": 23.0,
         "responses": 1,
         "avg_broken": 6.0,
         "social_mentions": 2
       },
-      "East of England": {
-        "score": 21.5,
-        "responses": 1,
+      "Wales": {
+        "score": 22.0,
+        "responses": 2,
         "avg_broken": 6.0,
-        "social_mentions": 1
-      },
-      "South West": {
-        "score": 20.0,
-        "responses": 1,
-        "avg_broken": 5.0,
-        "social_mentions": 2
+        "social_mentions": 0
       },
       "South East": {
         "score": 17.0,
@@ -346,109 +386,152 @@
         "responses": 1,
         "avg_broken": 3.0,
         "social_mentions": 0
-      },
-      "Wales": {
-        "score": 8.0,
-        "responses": 1,
-        "avg_broken": 2.0,
-        "social_mentions": 0
       }
     },
     "market_opportunity": {
-      "Energy & bills": {
-        "score": 55.8,
-        "solvability": 8,
-        "profit": 9,
-        "demand_pct": 12.0
-      },
       "Poor conditions": {
-        "score": 54.6,
+        "score": 57.3,
         "solvability": 7,
         "profit": 8,
-        "demand_pct": 24.0
+        "demand_pct": 30.8
       },
-      "Rental affordability": {
-        "score": 50.2,
-        "solvability": 2,
-        "profit": 3,
-        "demand_pct": 88.0
+      "Energy & bills": {
+        "score": 54.1,
+        "solvability": 8,
+        "profit": 9,
+        "demand_pct": 7.7
       },
       "High upfront costs": {
-        "score": 48.6,
+        "score": 48.2,
         "solvability": 6,
         "profit": 7,
-        "demand_pct": 24.0
+        "demand_pct": 23.1
       },
       "Landlord issues": {
-        "score": 39.4,
+        "score": 37.6,
         "solvability": 5,
         "profit": 6,
-        "demand_pct": 16.0
+        "demand_pct": 11.5
+      },
+      "Contractor/maintenance access": {
+        "score": 34.6,
+        "solvability": 5,
+        "profit": 5,
+        "demand_pct": 11.5
+      },
+      "General rental concern": {
+        "score": 33.1,
+        "solvability": 5,
+        "profit": 5,
+        "demand_pct": 7.7
+      },
+      "No-pet policies": {
+        "score": 31.5,
+        "solvability": 5,
+        "profit": 5,
+        "demand_pct": 3.8
+      },
+      "Property management failures": {
+        "score": 31.5,
+        "solvability": 5,
+        "profit": 5,
+        "demand_pct": 3.8
+      },
+      "Mental health impact": {
+        "score": 31.5,
+        "solvability": 5,
+        "profit": 5,
+        "demand_pct": 3.8
+      },
+      "Housing supply concerns": {
+        "score": 31.5,
+        "solvability": 5,
+        "profit": 5,
+        "demand_pct": 3.8
+      },
+      "Letting agency issues": {
+        "score": 31.5,
+        "solvability": 5,
+        "profit": 5,
+        "demand_pct": 3.8
+      },
+      "Unable to save/build future": {
+        "score": 31.5,
+        "solvability": 5,
+        "profit": 5,
+        "demand_pct": 3.8
+      },
+      "Positive experience": {
+        "score": 31.5,
+        "solvability": 5,
+        "profit": 5,
+        "demand_pct": 3.8
       },
       "Discrimination": {
-        "score": 30.6,
+        "score": 27.2,
         "solvability": 4,
         "profit": 3,
-        "demand_pct": 24.0
+        "demand_pct": 15.4
       },
-      "Mental health": {
-        "score": 27.2,
-        "solvability": 3,
-        "profit": 5,
-        "demand_pct": 8.0
+      "Rental affordability": {
+        "score": 22.7,
+        "solvability": 2,
+        "profit": 3,
+        "demand_pct": 19.2
       },
       "Market competition": {
-        "score": 24.4,
+        "score": 22.6,
         "solvability": 1,
         "profit": 5,
-        "demand_pct": 16.0
+        "demand_pct": 11.5
       },
       "Tenure insecurity": {
-        "score": 24.2,
+        "score": 22.5,
         "solvability": 3,
         "profit": 4,
-        "demand_pct": 8.0
-      },
-      "Unable to save": {
-        "score": 21.2,
-        "solvability": 2,
-        "profit": 4,
-        "demand_pct": 8.0
+        "demand_pct": 3.8
       }
     },
     "credibility": {
-      "verified_sources": 260,
-      "total_sources": 951,
-      "credibility_pct": 27.3,
-      "survey_backed": 10,
+      "verified_sources": 653,
+      "total_sources": 2379,
+      "credibility_pct": 27.4,
+      "survey_backed": 9,
       "social_only": 1
     },
     "trend_direction": {
-      "Rental affordability": "stable",
       "Poor conditions": "stable",
-      "Landlord issues": "stable",
-      "Market competition": "stable",
+      "Landlord issues": "accelerating",
+      "Contractor/maintenance access": "accelerating",
+      "Market competition": "accelerating",
+      "No-pet policies": "insufficient_data",
+      "Property management failures": "insufficient_data",
+      "Rental affordability": "accelerating",
       "Discrimination": "stable",
       "High upfront costs": "stable",
-      "Tenure insecurity": "stable",
-      "Mental health": "stable",
-      "Energy & bills": "accelerating",
-      "Unable to save": "stable"
+      "Mental health impact": "insufficient_data",
+      "Housing supply concerns": "insufficient_data",
+      "Letting agency issues": "insufficient_data",
+      "Energy & bills": "stable",
+      "Unable to save/build future": "insufficient_data",
+      "General rental concern": "stable",
+      "Tenure insecurity": "insufficient_data",
+      "Positive experience": "insufficient_data"
     }
   },
   "scanner_summary": {
-    "total_news": 951,
-    "verified_news": 260,
-    "reddit_posts": 40,
+    "total_news": 2379,
+    "verified_news": 653,
+    "reddit_posts": 90,
     "locations": {
-      "London": 4,
-      "Manchester": 2,
-      "Bristol": 2,
-      "Belfast": 2,
-      "Birmingham": 2,
-      "Leeds": 2,
-      "Liverpool": 2,
-      "Cambridge": 1
+      "London": 10,
+      "Manchester": 5,
+      "Bristol": 5,
+      "Belfast": 5,
+      "Birmingham": 5,
+      "Leeds": 5,
+      "Liverpool": 5,
+      "Cambridge": 2
     },
     "agencies": [
       "Why a New Era of Property",
@@ -492,13 +575,70 @@
           "Rental crisis in London \u2018deepens further\u2019, landlords warn - thenegotiator.co.uk",
           "Rental crisis in London worsens: \u2018Payments border on the obscene\u2019 - City AM"
         ]
+      },
+      {
+        "ts": "2026-03-30T17:02:28.206809",
+        "problem": "Multiple negative reports",
+        "location": "London",
+        "severity": "MEDIUM",
+        "sources_count": 28,
+        "sentiment": {
+          "negative": 3,
+          "positive": 0
+        },
+        "status": "NEW",
+        "sources": [
+          "Will the London housing market keep dropping, or level off?",
+          "What is wrong with these houses (London)?",
+          "Giving tenants flexible notice",
+          "Ongoing roof leak, landlord not fixing it, council not helping \u2013 what can I do? ",
+          "Sell our flat or rent it out? (To go travelling)"
+        ]
+      },
+      {
+        "ts": "2026-03-30T17:17:46.977327",
+        "problem": "Multiple negative reports",
+        "location": "London",
+        "severity": "MEDIUM",
+        "sources_count": 24,
+        "sentiment": {
+          "negative": 3,
+          "positive": 0
+        },
+        "status": "NEW",
+        "sources": [
+          "Landlord wants to sell property. Can I be evicted before my fixed term ends in O",
+          "London renters at crisis point as number of homes to rent falls - NRLA",
+          "Rental crisis in London \u2018deepens further\u2019, landlords warn - thenegotiator.co.uk",
+          "Rental crisis in London worsens: \u2018Payments border on the obscene\u2019 - City AM",
+          "Jack Shenker \u00b7 Renters v. Rentiers - London Review of Books"
+        ]
+      },
+      {
+        "ts": "2026-03-30T17:33:04.523012",
+        "problem": "Multiple negative reports",
+        "location": "London",
+        "severity": "MEDIUM",
+        "sources_count": 23,
+        "sentiment": {
+          "negative": 3,
+          "positive": 0
+        },
+        "status": "NEW",
+        "sources": [
+          "London renters at crisis point as number of homes to rent falls - NRLA",
+          "Rental crisis in London \u2018deepens further\u2019, landlords warn - thenegotiator.co.uk",
+          "Rental crisis in London worsens: \u2018Payments border on the obscene\u2019 - City AM",
+          "Jack Shenker \u00b7 Renters v. Rentiers - London Review of Books",
+          "London's 'spiralling housing crisis' in numbers - BBC"
+        ]
       }
     ],
     "sentiment": {
-      "positive": 1,
-      "negative": 51,
-      "mixed": 3,
-      "neutral": 936
+      "positive": 2,
+      "negative": 131,
+      "mixed": 11,
+      "neutral": 2325
     }
   }
 }
