@@ -73,88 +73,156 @@ async function cloudClear(){try{await fetch(FUNC,{method:"DELETE"});}catch(e){}}
 /* ═ ANALYSER ═ */
 function analyse(text){
   const t=text.toLowerCase(),pr=[];
-  // Split into sentences for context-aware matching
-  const sentences=t.split(/[.!?;]+/).filter(s=>s.trim().length>5);
   
-  // Context-aware rules: check what the sentence is actually about
-  // Each rule requires the keyword to appear in a relevant context
+  // === KNOWN PATTERN MATCHING (context-aware) ===
+  // Each rule requires the keyword in a meaningful context, not just presence
   
-  // AFFORDABILITY — only when actually about rent price/cost of living
-  const affordCtx=/(?:rent|afford|expens|price|costly).*(?:high|too|much|increase|rise|hike|struggle|can't|cannot|barely|squeez)/;
-  const affordCtx2=/(?:high|too|much|increase|rise).*(?:rent|cost|price|bill)/;
-  if(affordCtx.test(t)||affordCtx2.test(t))pr.push("Rental affordability");
-  // Also match direct statements about rent being too much
-  if(/rent.*(?:too|very|incredibly|ridiculously|insanely).*(?:expensive|high|much)/i.test(t))pr.push("Rental affordability");
-  if(/(?:can't|cannot|barely|hardly|struggle to).*(?:afford|pay|cover).*(?:rent|bill)/i.test(t)&&!pr.includes("Rental affordability"))pr.push("Rental affordability");
+  // AFFORDABILITY — specifically about rent being too high relative to income
+  if(/(?:rent|afford|expens|price|costly).*(?:high|too|much|increase|rise|hike|struggle|can't|cannot|barely|squeez)/i.test(t))pr.push('Rental affordability');
+  if(/rent.*(?:too|very|incredibly|ridiculously|insanely).*(?:expensive|high|much)/i.test(t)&&!pr.includes('Rental affordability'))pr.push('Rental affordability');
+  if(/(?:can't|cannot|barely|hardly|struggle to).*(?:afford|pay|cover).*(?:rent|bill)/i.test(t)&&!pr.includes('Rental affordability'))pr.push('Rental affordability');
   
   // POOR CONDITIONS — physical state of property
-  if(/damp|mould|mold|leak|rot|pest|mice|rat|cockroach|filth|crumbl|crack|broken.*(?:window|door|boiler|heater|pipe|roof|wall|floor)|uninhabit|condemn|unsafe.*(?:propert|flat|house|home)|infest/i.test(t))pr.push("Poor conditions");
+  if(/damp|mould|mold|leak|rot|pest|mice|rat|cockroach|filth|crumbl|crack|broken.*(?:window|door|boiler|heater|pipe|roof|wall|floor)|uninhabit|condemn|unsafe.*(?:propert|flat|house|home)|infest/i.test(t))pr.push('Poor conditions');
   
-  // LANDLORD/AGENT ISSUES — communication, responsiveness, behaviour
-  if(/landlord.*(?:ignor|unresponsiv|refuse|won't|never|doesn't|difficult|hostile|threaten|harass|enter|bully|rude|aggressive)/i.test(t))pr.push("Landlord issues");
-  if(/(?:agent|agency|letting).*(?:ignor|unresponsiv|useless|terrible|awful|rude|fee|scam|dishonest)/i.test(t))pr.push("Letting agency issues");
+  // LANDLORD ISSUES — landlord behaviour specifically
+  if(/landlord.*(?:ignor|unresponsiv|refuse|won't|never|doesn't|difficult|hostile|threaten|harass|enter|bully|rude|aggressive)/i.test(t))pr.push('Landlord issues');
   
-  // CONTRACTOR/MAINTENANCE ACCESS — getting repairs done
-  if(/contractor|repair.*(?:hard|difficult|slow|wait|month|week|delay|impossible|ages|forever)/i.test(t))pr.push("Contractor/maintenance access");
-  if(/(?:hard|difficult|impossible|can't|cannot).*(?:find|get|book).*(?:contractor|plumber|electrician|repair|tradesperson|builder)/i.test(t)&&!pr.includes("Contractor/maintenance access"))pr.push("Contractor/maintenance access");
-  if(/(?:repair|fix|maintenance|service).*(?:slow|delay|wait|never|months|ages|forever)/i.test(t)&&!pr.includes("Contractor/maintenance access"))pr.push("Contractor/maintenance access");
+  // LETTING AGENCY — agent-specific problems
+  if(/(?:agent|agency|letting).*(?:ignor|unresponsiv|useless|terrible|awful|rude|fee|scam|dishonest)/i.test(t))pr.push('Letting agency issues');
   
-  // TENURE INSECURITY — fear of eviction, short tenancies
-  if(/evict|section 21|no.fault|notice.*(?:leave|quit|vacate)|insecur.*tenan|fear.*(?:losing|lose).*home|selling.*(?:property|flat|house)/i.test(t))pr.push("Tenure insecurity");
+  // CONTRACTOR/MAINTENANCE — getting repairs done
+  if(/contractor|repair.*(?:hard|difficult|slow|wait|month|week|delay|impossible|ages|forever)/i.test(t))pr.push('Contractor/maintenance access');
+  if(/(?:hard|difficult|impossible|can't|cannot).*(?:find|get|book).*(?:contractor|plumber|electrician|repair|tradesperson|builder)/i.test(t)&&!pr.includes('Contractor/maintenance access'))pr.push('Contractor/maintenance access');
+  if(/(?:repair|fix|maintenance|service).*(?:slow|delay|wait|never|months|ages|forever)/i.test(t)&&!pr.includes('Contractor/maintenance access'))pr.push('Contractor/maintenance access');
   
-  // MARKET COMPETITION — finding a place, bidding wars
-  if(/(?:compet|bid|bidding|outbid|dozens|queue|fight|scramble).*(?:view|flat|property|rental|place)/i.test(t))pr.push("Market competition");
-  if(/(?:hard|difficult|impossible|nightmare).*(?:find|finding|get|search).*(?:flat|property|place|rental|home|room)/i.test(t)&&!pr.includes("Market competition"))pr.push("Market competition");
-  if(/(?:applied|rejected|turned down).*(?:flat|propert|place|room)/i.test(t)&&!pr.includes("Market competition"))pr.push("Market competition");
-  if(/(?:market|flat.?hunt|property search).*(?:nightmare|impossible|hell|brutal|insane)/i.test(t)&&!pr.includes("Market competition"))pr.push("Market competition");
+  // TENURE INSECURITY
+  if(/evict|section 21|no.fault|notice.*(?:leave|quit|vacate)|insecur.*tenan|fear.*(?:losing|lose).*home|selling.*(?:property|flat|house)/i.test(t))pr.push('Tenure insecurity');
   
-  // HIGH UPFRONT COSTS
-  if(/(?:can't|cannot|can not|unable|impossible).*(?:save|saving)/i.test(t))pr.push("Unable to save/build future");
-  if(/(?:deposit|upfront|advance|guarantor|months? upfront|6 months|pay.*advance)/i.test(t)&&!/(?:can't|cannot|can not).*save/i.test(t))pr.push("High upfront costs");
+  // MARKET COMPETITION
+  if(/(?:compet|bid|bidding|outbid|dozens|queue|fight|scramble).*(?:view|flat|property|rental|place)/i.test(t))pr.push('Market competition');
+  if(/(?:hard|difficult|impossible|nightmare).*(?:find|finding|get|search).*(?:flat|property|place|rental|home|room)/i.test(t)&&!pr.includes('Market competition'))pr.push('Market competition');
+  if(/(?:applied|rejected|turned down).*(?:flat|propert|place|room)/i.test(t)&&!pr.includes('Market competition'))pr.push('Market competition');
+  
+  // UPFRONT COSTS vs UNABLE TO SAVE
+  if(/(?:can't|cannot|can not|unable|impossible).*(?:save|saving)/i.test(t))pr.push('Unable to save/build future');
+  if(/(?:deposit|upfront|advance|guarantor|months? upfront|6 months|pay.*advance)/i.test(t)&&!/(?:can't|cannot|can not).*save/i.test(t))pr.push('High upfront costs');
   
   // ENERGY & BILLS
-  if(/(?:energy|electric|gas|heating|insulation|epc|cold|freezing).*(?:bill|cost|expensive|high|poor|terrible|single glaz)/i.test(t))pr.push("Energy & bills");
-  if(/(?:bill|cost).*(?:energy|electric|gas|heating)/i.test(t)&&!pr.includes("Energy & bills"))pr.push("Energy & bills");
+  if(/(?:energy|electric|gas|heating|insulation|epc|cold|freezing).*(?:bill|cost|expensive|high|poor|terrible|single glaz)/i.test(t))pr.push('Energy & bills');
+  if(/(?:bill|cost).*(?:energy|electric|gas|heating)/i.test(t)&&!pr.includes('Energy & bills'))pr.push('Energy & bills');
   
   // DISCRIMINATION
-  if(/discriminat|no dss|won't.*(?:rent|let).*(?:benefit|student|foreign|international)|refused.*(?:because|due)/i.test(t))pr.push("Discrimination");
-  if(/(?:reject|refused|turned down).*(?:benefit|nationality|race|age|student|immigrant|visa)/i.test(t)&&!pr.includes("Discrimination"))pr.push("Discrimination");
+  if(/discriminat|no dss|won't.*(?:rent|let).*(?:benefit|student|foreign|international)|refused.*(?:because|due)/i.test(t))pr.push('Discrimination');
+  if(/(?:reject|refused|turned down).*(?:benefit|nationality|race|age|student|immigrant|visa)/i.test(t)&&!pr.includes('Discrimination'))pr.push('Discrimination');
   
-  // MENTAL HEALTH IMPACT
-  if(/(?:mental|stress|anxiety|depress|wellbeing|health).*(?:impact|affect|toll|suffer|struggle)/i.test(t))pr.push("Mental health impact");
-  if(/(?:trapped|hopeless|desperate|overwhelm|breaking point|can't cope)/i.test(t)&&!pr.includes("Mental health impact"))pr.push("Mental health impact");
+  // MENTAL HEALTH
+  if(/(?:mental|stress|anxiety|depress|wellbeing|health).*(?:impact|affect|toll|suffer|struggle)/i.test(t))pr.push('Mental health impact');
+  if(/(?:trapped|hopeless|desperate|overwhelm|breaking point|can't cope)/i.test(t)&&!pr.includes('Mental health impact'))pr.push('Mental health impact');
   
-  // UNABLE TO SAVE/BUILD FUTURE
-  if(/(?:can't|cannot|unable|impossible).*(?:save|saving|deposit|buy|mortgage|homeown)/i.test(t))pr.push("Unable to save/build future");
+  // PET POLICIES
+  if(/no.*pet|pet.*(?:policy|restrict|ban|not allowed|can't have)/i.test(t))pr.push('No-pet policies');
   
-  // NO-PET POLICIES
-  if(/no.*pet|pet.*(?:policy|restrict|ban|not allowed|can't have)/i.test(t))pr.push("No-pet policies");
+  // HOUSING SUPPLY
+  if(/(?:no|lack|shortage|limited|scarce).*(?:housing|property|properties|supply|stock|option|choice)/i.test(t))pr.push('Housing supply concerns');
   
-  // HOUSING SUPPLY / AVAILABILITY
-  if(/(?:no|lack|shortage|limited|scarce).*(?:housing|property|properties|supply|stock|option|choice)/i.test(t))pr.push("Housing supply concerns");
+  // PROPERTY MANAGEMENT
+  if(/(?:manag|hmo|shared).*(?:fail|terrible|awful|neglect|useless|poor|bad)/i.test(t))pr.push('Property management failures');
+  if(/(?:clean|cleanliness|communal|shared).*(?:terrible|awful|filthy|disgusting|never|poor)/i.test(t)&&!pr.includes('Property management failures'))pr.push('Property management failures');
   
-  // PROPERTY MANAGEMENT FAILURES — managing agents, HMO management
-  if(/(?:manag|hmo|shared).*(?:fail|terrible|awful|neglect|useless|poor|bad)/i.test(t))pr.push("Property management failures");
-  if(/(?:clean|cleanliness|communal|shared).*(?:terrible|awful|filthy|disgusting|never|poor)/i.test(t)&&!pr.includes("Property management failures"))pr.push("Property management failures");
+  // OVERCROWDING
+  if(/(?:overcrowd|too many|cramped|tiny|small).*(?:room|space|people|person|tenant|flatmate)/i.test(t))pr.push('Overcrowding');
   
-  // GENERAL RENTAL DIFFICULTY — catch-all for genuine complaints that don't fit above
-  if(pr.length===0&&t.length>20){
-    // Extract the core complaint by looking at negative phrases
-    if(/(?:hard|difficult|problem|issue|concern|challenge|struggle|bad|terrible|awful|poor|worst)/i.test(t)){
-      // Try to identify what specifically is hard/bad
-      const what=t.match(/(?:hard|difficult|problem|issue).*?(?:with|to|of|about|getting|finding)[\s]+([a-z\s]{3,30})/i);
-      if(what){
-        const topic=what[1].trim().replace(/^(?:the|a|an|my|our)\s+/,"");
-        if(topic.length>2&&topic.length<40){
-          // Create a dynamic label from the actual complaint
-          const label=topic.charAt(0).toUpperCase()+topic.slice(1).replace(/\s+/g," ").trim();
-          pr.push("General rental difficulty");
-        }else{pr.push("General rental difficulty");}
-      }else{pr.push("General rental difficulty");}
-    }else{pr.push("General rental difficulty");}
+  // NOISE / NEIGHBOURS
+  if(/(?:noise|noisy|loud|neighbours?[^h]|neighbors?[^h]|party|parties|antisocial|anti.social)/i.test(t))pr.push('Noise/neighbour issues');
+  
+  // COMMUTE / LOCATION TRADE-OFF
+  if(/(?:commut|travel|transport|far from|moved further|long journey)/i.test(t))pr.push('Commute/location trade-off');
+  
+  // REGULATIONS / LEGAL AWARENESS
+  if(/(?:rights|regulation|law|legal|tribunal|court|council.*(?:help|support|enforce))/i.test(t)&&/(?:vague|unclear|don't know|confusing|hard to understand)/i.test(t))pr.push('Unclear tenant rights');
+  
+  // PARKING
+  if(/(?:parking|park|car.*space|no.*where.*park)/i.test(t))pr.push('Parking issues');
+  
+  // BROADBAND / CONNECTIVITY
+  if(/(?:broadband|wifi|internet|signal|connectivity|mobile.*signal)/i.test(t))pr.push('Poor broadband/connectivity');
+  
+  // ACCESSIBILITY
+  if(/(?:accessib|disability|wheelchair|lift|stair|mobility|disabled)/i.test(t))pr.push('Accessibility issues');
+  
+  // GARDEN / OUTDOOR SPACE
+  if(/(?:garden|outdoor|yard|fence|overgrown)/i.test(t)&&/(?:bad|poor|broken|neglect|overgrown|refused|won't)/i.test(t))pr.push('Garden/outdoor neglect');
+  
+  // UNFAIR RULES / RESTRICTIONS
+  if(/(?:rules?|restriction|not allowed|banned|forbid|can't.*(?:have|do|use)|policy.*unfair)/i.test(t)&&!pr.includes('No-pet policies'))pr.push('Unfair tenancy restrictions');
+
+    // === DYNAMIC LABEL GENERATION ===
+  // If no known patterns matched, extract the actual complaint and create a label
+  if(pr.length===0&&t.length>15){
+    // Extract what the person is actually complaining about
+    const patterns=[
+      /(?:problem|issue|struggle|difficulty|challenge|concern|complaint) (?:is |with |about )?(.{5,50}?)(?:\.|,|!|$)/i,
+      /(?:hard|difficult|impossible|terrible|awful|bad|worst|nightmare) (?:to |with |getting )?(.{5,50}?)(?:\.|,|!|$)/i,
+      /(?:can't|cannot|unable|no way) (?:to )?(.{5,40}?)(?:\.|,|!|$)/i,
+      /(?:biggest|main|major|real) (?:problem|issue|concern|challenge) (?:is |was )?(.{5,50}?)(?:\.|,|!|$)/i,
+      /(?:frustrated|annoyed|angry|upset) (?:about|with|by) (.{5,50}?)(?:\.|,|!|$)/i,
+    ];
+    
+    let extracted=null;
+    for(const pat of patterns){
+      const m=t.match(pat);
+      if(m&&m[1]){extracted=m[1].trim();break;}
+    }
+    
+    if(extracted){
+      // Clean up and create a proper label
+      const cleaned=extracted
+        .replace(/^(?:the|a|an|my|our|is|was|are|to|that|this|it|of|in|any|some|very|really|quite|so)\s+/gi,'')
+        .replace(/\s+(?:in|of|at|the|a|an|for|with|to|from|near|my|our|this|that)\s+/gi,' ')
+        .replace(/\s+/g,' ')
+        .trim();
+      if(cleaned.length>3&&cleaned.length<50){
+        // Capitalise first letter, create readable label
+        const label=cleaned.charAt(0).toUpperCase()+cleaned.slice(1);
+        // Trim to max 5 words, clean up articles/prepositions at boundaries
+        const words=label.split(' ').filter(w=>!['the','a','an','in','of','at','is','are','to','these','this','that','those','new'].includes(w.toLowerCase()));
+        pr.push(words.slice(0,5).join(' '));
+      }
+    }
+    
+    // If still nothing, do semantic extraction — find the core noun phrase being complained about
+    if(pr.length===0){
+      // Look for negative adjective + noun patterns
+      const negNoun=t.match(/(?:bad|poor|terrible|awful|broken|faulty|useless|slow|expensive|old|dated|outdated|cramped|dirty|noisy|cold|dark|small|unsafe|unfair|unreasonable|excessive)\s+([a-z\s]{3,30}?)(?:\.|,|!|and|but|$)/i);
+      if(negNoun&&negNoun[1]){
+        const topic=negNoun[1].trim().replace(/^(?:the|a|an)\s+/,'');
+        if(topic.length>2&&topic.length<35){
+          const tw=topic.split(' ').filter(w=>!['the','a','an','and','or','in','of','at','is','are','to'].includes(w.toLowerCase()));
+          const topicLabel=tw.slice(0,5).join(' ');
+          pr.push(topicLabel.charAt(0).toUpperCase()+topicLabel.slice(1));
+        }
+      }
+    }
+    
+    // Absolute last resort
+    if(pr.length===0){
+      // Check if text is actually positive (no complaint)
+      if(/(?:good|great|nice|lovely|fair|happy|comfortable|decent|excellent|perfect|love|enjoy|recommend|seamless|outstanding|brilliant|wonderful|fantastic|pleasant|satisfied)/i.test(t)&&
+         !/(?:not|but|however|except|although|despite|unless)/i.test(t)){
+        pr.push('Positive experience');
+      }else{
+        pr.push('General rental concern');
+      }
+    }
   }
   
-  // Remove duplicates and return max 6
+  // For very short text that matched nothing
+  if(pr.length===0){
+    if(/(?:good|great|nice|lovely|fair|happy|fine|ok|seamless|outstanding|pleasant|satisfied)/i.test(t)) pr.push('Positive experience');
+    else pr.push('General rental concern');
+  }
+  
   return [...new Set(pr)].slice(0,6);
 }
 
