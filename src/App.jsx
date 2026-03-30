@@ -192,39 +192,116 @@ function Survey({onAdmin}){
     return p;
   };
 
-  // AI-personalised questions — via Netlify function, with diverse fallback
+  // INTELLIGENT QUESTION ENGINE
+  // 1. Loads existing cloud responses to learn common patterns
+  // 2. Detects sentiment (positive vs negative experience)
+  // 3. Generates balanced questions exploring both sides
+  // 4. Every question is unique, context-aware, region-specific
   const generateAI=async()=>{
     setAiLoad(true);const pr=analyse(d.freeText);u("problems",pr);
-    // Try Netlify AI function first
+    
+    // Detect sentiment — is this person's experience mostly negative or has positives?
+    const negWords=/terrible|awful|horrible|disgusting|unliveable|nightmare|hell|worst|broken|unsafe|freezing|mould|damp|harass|threaten|evict|discriminat/i;
+    const posWords=/good|great|nice|lovely|fair|reasonable|responsive|helpful|friendly|clean|well-maintained|happy|comfortable|decent|quiet/i;
+    const isNeg=negWords.test(d.freeText);
+    const isPos=posWords.test(d.positive||"")||posWords.test(d.freeText);
+    const sentiment=isPos&&!isNeg?"positive":isNeg&&!isPos?"negative":"mixed";
+    
+    // Load existing responses to understand common patterns in this region
+    let commonProblems=[], avgRating=5;
+    try{
+      const existing=await cloudLoad();
+      const regional=existing.filter(r=>r.region===d.region);
+      if(regional.length>0){
+        const pc={};regional.forEach(r=>(r.problems||[]).forEach(p=>{pc[p]=(pc[p]||0)+1;}));
+        commonProblems=Object.entries(pc).sort((a,b)=>b[1]-a[1]).map(([k])=>k).slice(0,5);
+        avgRating=(regional.reduce((s,r)=>s+(Number(r.brokenRating)||5),0)/regional.length).toFixed(1);
+      }
+    }catch(e){}
+    
+    // Try AI via Netlify function
     try{
       const r=await fetch("/.netlify/functions/ai",{method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({profile:profile(),freeText:d.freeText,problems:pr,positive:d.positive,
           region:d.region,incomeSource:d.incomeSource,depositIssue:d.depositIssue,
-          conditionRating:d.conditionRating,landlordRating:d.landlordRating})});
+          conditionRating:d.conditionRating,landlordRating:d.landlordRating,
+          sentiment,commonProblems,avgRating})});
       if(r.ok){const data=await r.json();if(data.questions?.length>=3){u("aiQuestions",data.questions);setAiLoad(false);nx();return;}}
     }catch(e){}
-    // Diverse fallback — every question is different
-    const pool=[
-      {id:"f1",q:`In ${d.area}, how is rent affordability affecting your daily life?`,o:["Skipping meals or essentials","Can't afford to socialise","Had to move further from work","Considering leaving the area entirely"]},
-      {id:"f2",q:"How would you describe your property's physical condition?",o:["Damp, mould or leaks","Broken fixtures landlord won't repair","Poor insulation / freezing in winter","Generally acceptable with minor issues"]},
-      {id:"f3",q:"How responsive is your landlord or letting agent?",o:["Completely unresponsive","Acknowledges but doesn't follow through","Responsive and helpful","Hostile or intimidating when contacted"]},
-      {id:"f4",q:"How secure do you feel in your current tenancy?",o:["Very insecure — could be asked to leave anytime","Somewhat worried — short-term contract","Fairly secure — long tenancy in place","Very secure — good relationship with landlord"]},
-      {id:"f5",q:"How competitive was finding your current place?",o:["Dozens of applicants per viewing","Had to offer above asking rent","Took months of searching","Found it relatively easily"]},
-      {id:"f6",q:`What would make the biggest difference to renters in ${d.region}?`,o:["Rent caps tied to local wages","Mandatory property condition standards","Longer minimum tenancy periods","More social and affordable housing"]},
-      {id:"f7",q:"How has renting affected your future plans?",o:["Can't save for a deposit to buy","Delayed starting a family","Can't commit to a career in this area","Feel stuck with no way forward"]},
-      {id:"f8",q:"Have you ever experienced discrimination when looking to rent?",o:["Yes — rejected for being on benefits","Yes — nationality or immigration status","Yes — age or student status","No discrimination experienced"]},
-      {id:"f9",q:"How did you handle your deposit?",o:["Paid it fine, it's protected","Struggled to afford it","Previous deposit was unfairly withheld","Had to use a guarantor or pay months upfront"]},
-      {id:"f10",q:"How has renting affected your mental health?",o:["Significant anxiety or stress","Some impact but manageable","Major impact — affecting sleep, work, relationships","Minimal impact"]},
-    ];
-    // Pick problem-relevant questions first, then fill with others
-    const picked=[];const used=new Set();
-    const probMap={"Rental affordability":["f1","f7"],"Poor conditions":["f2"],"Landlord issues":["f3"],"Tenure insecurity":["f4"],"Market competition":["f5"],"Discrimination":["f8"],"High upfront costs":["f9"],"Mental health":["f10"],"Unable to save":["f7"]};
-    for(const p of pr){for(const id of (probMap[p]||[])){if(!used.has(id)){const q=pool.find(x=>x.id===id);if(q){picked.push(q);used.add(id);}}}if(picked.length>=4)break;}
-    // Fill remaining with unused questions
-    for(const q of pool){if(picked.length>=4)break;if(!used.has(q.id)){picked.push(q);used.add(q.id);}}
-    // Add region-specific question
-    if(picked.length<4)picked.push({id:"fr",q:`What's the single biggest issue facing renters in ${d.area} right now?`,o:["Rent prices rising too fast","Not enough properties available","Poor quality housing stock","Unfair treatment by landlords/agents"]});
-    u("aiQuestions",picked.slice(0,4));
+    
+    // SMART FALLBACK — sentiment-aware, balanced, region-specific, never repeats
+    const area=d.area||d.region;
+    const questions=[];
+    
+    // Question bank — grouped by theme, each with balanced positive+negative options
+    const bank={
+      affordability:[
+        {id:"af1",q:`How does the cost of renting in ${area} compare to what you expected?`,o:["Much worse than expected","Slightly worse","About what I expected","Actually better than I feared"]},
+        {id:"af2",q:"How is your rent level affecting your quality of life?",o:["Severely — cutting essentials","Noticeably — less socialising and saving","Manageable — tight but okay","Comfortable — I can live well"]},
+      ],
+      conditions:[
+        {id:"co1",q:"How would you describe the physical state of your home?",o:["Unsafe or unhealthy conditions","Needs significant repairs","Minor issues but liveable","Good condition, well maintained"]},
+        {id:"co2",q:"When you report maintenance issues, what typically happens?",o:["Nothing — completely ignored","Acknowledged but very slow","Fixed within a reasonable time","Handled quickly and well"]},
+      ],
+      landlord:[
+        {id:"ll1",q:"How would you describe your relationship with your landlord or agent?",o:["Hostile or intimidating","Distant and unresponsive","Professional and adequate","Genuinely good and supportive"]},
+        {id:"ll2",q:"Does your landlord respect your rights as a tenant?",o:["No — enters without notice, withholds deposit","Sometimes — inconsistent","Mostly yes","Fully — very respectful"]},
+      ],
+      security:[
+        {id:"se1",q:`How secure do you feel staying in your current home in ${area}?`,o:["Very insecure — could lose it anytime","Somewhat worried about the future","Fairly stable for now","Very secure — long-term tenancy"]},
+        {id:"se2",q:"What's your biggest concern about your tenancy continuing?",o:["Landlord selling the property","Rent being raised beyond affordability","Section 21 / no-fault eviction","No major concerns — I feel settled"]},
+      ],
+      market:[
+        {id:"mk1",q:`How would you describe the rental market in ${area} right now?`,o:["Extremely competitive — impossible to find anything","Tough — limited options in budget","Manageable if flexible on location","Reasonable — found options fairly easily"]},
+        {id:"mk2",q:"How many properties did you view before finding your current home?",o:["10+ and still felt pressured","5–10 with multiple rejections","2–5 before finding something","Found it within first few viewings"]},
+      ],
+      positive_explore:[
+        {id:"po1",q:"What's the best thing about where you're currently renting?",o:["Location and neighbourhood","The property itself","My landlord/agent","The community and neighbours"]},
+        {id:"po2",q:"If you could keep one thing about your rental experience and change everything else, what would you keep?",o:["The area I live in","The rent price","The property quality","The flexibility of renting"]},
+      ],
+      discrimination:[
+        {id:"di1",q:"Have you ever been turned down for a rental for reasons unrelated to affordability?",o:["Yes — benefits status (DSS/UC)","Yes — nationality or immigration","Yes — age or student status","No — never experienced this"]},
+      ],
+      future:[
+        {id:"fu1",q:"How has renting shaped your plans for the future?",o:["Can't save — homeownership feels impossible","Delayed major life decisions","Made me consider leaving ${area}","Hasn't significantly affected my plans"]},
+        {id:"fu2",q:"What would make you rate the UK rental system higher?",o:["Rent controls tied to local wages","Mandatory minimum property standards","Longer tenancies as default","More affordable housing built"]},
+      ],
+      regional:[
+        {id:"rg1",q:`Compared to other places you've lived, how does ${area} treat its renters?`,o:["Worse — fewer protections and higher costs","About the same as elsewhere","Better — more options and fairer","Much better — I chose to stay here"]},
+      ],
+      community:[
+        {id:"cm1",q:`How connected do you feel to the community in ${area}?`,o:["Not at all — renting makes me feel temporary","Somewhat — but insecurity holds me back","Fairly connected — I've built a life here","Very connected — this is my home"]},
+      ]
+    };
+    
+    // Selection logic: pick based on problems, sentiment, and what's not yet covered
+    const usedIds=new Set();
+    const pick=(category)=>{
+      const opts=bank[category]||[];
+      for(const q of opts){if(!usedIds.has(q.id)){usedIds.add(q.id);questions.push(q);return true;}}
+      return false;
+    };
+    
+    // If positive sentiment detected, lead with positive exploration
+    if(sentiment==="positive"||sentiment==="mixed"){pick("positive_explore");}
+    
+    // Pick based on identified problems
+    const probToBank={"Rental affordability":"affordability","Poor conditions":"conditions","Landlord issues":"landlord","Tenure insecurity":"security","Market competition":"market","Discrimination":"discrimination","Unable to save":"future","Mental health":"future","High upfront costs":"affordability","Energy & bills":"conditions"};
+    for(const p of pr){const cat=probToBank[p];if(cat&&questions.length<4)pick(cat);}
+    
+    // Fill remaining with diverse topics not yet covered
+    const fillOrder=sentiment==="positive"
+      ?["positive_explore","community","regional","future","market","security"]
+      :["regional","future","community","positive_explore","market","security","discrimination"];
+    for(const cat of fillOrder){if(questions.length>=4)break;pick(cat);}
+    
+    // Absolute last resort — should never reach here but guarantees 4 unique questions
+    if(questions.length<4)pick("affordability");
+    if(questions.length<4)pick("conditions");
+    if(questions.length<4)pick("landlord");
+    if(questions.length<4)pick("community");
+    
+    u("aiQuestions",questions.slice(0,4));
     setAiLoad(false);nx();
   };
 
