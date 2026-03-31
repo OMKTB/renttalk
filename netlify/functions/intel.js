@@ -191,9 +191,13 @@ exports.handler = async (event) => {
       // Keep last 50 scans
       while (scans.length > 50) scans.shift();
       
+      // Preserve intel_package when writing scan data
+      const preserved = existing.intel_package || null;
+      const writeData = {scans, lastRun: scan.timestamp};
+      if (preserved) writeData.intel_package = preserved;
       await fetch(INTEL_BLOB, {
         method: "PUT", headers: H,
-        body: JSON.stringify({scans, lastRun: scan.timestamp})
+        body: JSON.stringify(writeData)
       });
 
       return {
