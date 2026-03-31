@@ -14,7 +14,7 @@ from datetime import datetime
 HOME = os.path.expanduser("~/renttalk")
 LOG = os.path.join(HOME, "ig_scan_findings.json")
 SCAN_LOG = os.path.join(HOME, "scanner_v2.log")
-INTEL_BLOB = "https://jsonblob.com/api/jsonBlob/019d3b83-817c-7639-bdf9-1f25e2c1ee2d"
+INTEL_BLOB = "https://jsonblob.com/api/jsonBlob/019d442c-0a2c-793a-8866-9ba75ef5e02c"
 
 ctx = ssl.create_default_context()
 ctx.check_hostname = False

@@ -1,8 +1,8 @@
 {
-  "generated": "2026-03-30T17:44:33.179025",
+  "generated": "2026-03-31T10:52:40.492209",
   "cross_reference": {
     "London": {
-      "social_mentions": 10,
+      "social_mentions": 66,
       "survey_responses": 7,
       "region": "London",
       "survey_problems": {
@@ -18,9 +18,38 @@
       },
       "alignment": "confirmed"
     },
-    "Manchester": {
-      "social_mentions": 5,
-      "survey_responses": 10,
+    "Leeds": {
+      "social_mentions": 30,
+      "survey_responses": 1,
+      "region": "Yorkshire & Humber",
+      "survey_problems": {
+        "Poor conditions": 1
+      },
+      "alignment": "confirmed"
+    },
+    "Bristol": {
+      "social_mentions": 30,
+      "survey_responses": 2,
+      "region": "South West",
+      "survey_problems": {
+        "Poor conditions": 1,
+        "Energy & bills": 1,
+        "Ways": 1
+      },
+      "alignment": "confirmed"
+    },
+    "Birmingham": {
+      "social_mentions": 30,
+      "survey_responses": 1,
+      "region": "West Midlands",
+      "survey_problems": {
+        "Energy & bills": 1
+      },
+      "alignment": "confirmed"
+    },
+    "Liverpool": {
+      "social_mentions": 30,
+      "survey_responses": 11,
       "region": "North West",
       "survey_problems": {
         "Poor conditions": 3,
@@ -31,13 +60,31 @@
         "Property management failures": 1,
         "Rental affordability": 1,
         "Discrimination": 1,
-        "General rental concern": 2,
+        "General rental concern": 3,
+        "Positive experience": 1
+      },
+      "alignment": "confirmed"
+    },
+    "Manchester": {
+      "social_mentions": 30,
+      "survey_responses": 11,
+      "region": "North West",
+      "survey_problems": {
+        "Poor conditions": 3,
+        "Landlord issues": 1,
+        "Contractor/maintenance access": 1,
+        "Market competition": 2,
+        "No-pet policies": 1,
+        "Property management failures": 1,
+        "Rental affordability": 1,
+        "Discrimination": 1,
+        "General rental concern": 3,
         "Positive experience": 1
       },
       "alignment": "confirmed"
     },
     "Cambridge": {
-      "social_mentions": 2,
+      "social_mentions": 12,
       "survey_responses": 1,
       "region": "East of England",
       "survey_problems": {
@@ -46,56 +93,20 @@
       },
       "alignment": "confirmed"
     },
-    "Bristol": {
-      "social_mentions": 5,
-      "survey_responses": 1,
-      "region": "South West",
-      "survey_problems": {
-        "Poor conditions": 1,
-        "Energy & bills": 1
-      },
-      "alignment": "confirmed"
-    },
     "Belfast": {
-      "social_mentions": 5,
+      "social_mentions": 2,
       "survey_responses": 0,
       "region": "Northern Ireland",
       "survey_problems": {},
       "alignment": "social_only"
     },
-    "Birmingham": {
-      "social_mentions": 5,
+    "Glasgow": {
+      "social_mentions": 12,
       "survey_responses": 1,
-      "region": "West Midlands",
+      "region": "Scotland",
       "survey_problems": {
-        "Energy & bills": 1
-      },
-      "alignment": "confirmed"
-    },
-    "Leeds": {
-      "social_mentions": 5,
-      "survey_responses": 1,
-      "region": "Yorkshire & Humber",
-      "survey_problems": {
-        "Poor conditions": 1
-      },
-      "alignment": "confirmed"
-    },
-    "Liverpool": {
-      "social_mentions": 5,
-      "survey_responses": 10,
-      "region": "North West",
-      "survey_problems": {
-        "Poor conditions": 3,
-        "Landlord issues": 1,
-        "Contractor/maintenance access": 1,
-        "Market competition": 2,
-        "No-pet policies": 1,
-        "Property management failures": 1,
         "Rental affordability": 1,
-        "Discrimination": 1,
-        "General rental concern": 2,
-        "Positive experience": 1
+        "Poor conditions": 1
       },
       "alignment": "confirmed"
     }
@@ -103,102 +114,104 @@
   "social_cards": [
     {
       "type": "reddit",
-      "title": "if you're a landlord earning over \u00a350k, keep this in mind",
-      "text": "i'm a tax accountant and about half my clients are landlords. this post is mainly about MTD because i've had three separate clients this week say \"i thought they delayed that again\" and i'm losing my ",
-      "url": "https://reddit.com/r/HousingUK/comments/1s80h62/if_youre_a_landlord_earning_over_50k_keep_this_in/",
-      "sentiment": "neutral",
+      "title": "Complaining to council re landlord",
+      "text": "I got an illegal sec21 (2 months into my tenancy). I chose to move in the notice period because o found a really nice place and didn\u2019t want to delay the inevitable. However, I\u2019m very upset over the fi",
+      "url": "https://reddit.com/r/HousingUK/comments/1s5igy9/complaining_to_council_re_landlord/",
+      "sentiment": "negative",
+      "locations": [],
+      "sub": "HousingUK",
+      "score": 0
+    },
+    {
+      "type": "reddit",
+      "title": "Huge Rent Hike- What are our options?",
+      "text": "Hi there, We have lived in a 2 bedroom housing association flat in Southwark for 5 x years at a reasonable price, with reasonable rent increases incrementally.\n\nThe association sold off the whole esta",
+      "url": "https://reddit.com/r/HousingUK/comments/1s55mak/huge_rent_hike_what_are_our_options/",
+      "sentiment": "positive",
+      "locations": [],
+      "sub": "HousingUK",
+      "score": 3
+    },
+    {
+      "type": "reddit",
+      "title": "Rough Sleeper Not Classed As Homeless",
+      "text": "I am at a loss on what to do for a gent I know. He was being illegally let a room in a house that another guy is renting. \u00a3500 a month cash only. No tenancy agreement (because the gent isn\u2019t the landl",
+      "url": "https://reddit.com/r/HousingUK/comments/1s1q2h4/rough_sleeper_not_classed_as_homeless/",
+      "sentiment": "negative",
       "locations": [],
       "sub": "HousingUK",
       "score": 2
     },
     {
       "type": "reddit",
-      "title": "Need help dealing with toxic and hassling flatmate (England)",
-      "text": "  \n\n\n(Throwaway account btw)\n\nI'm hoping to get some advice on an extremely problematic and toxic person I am living with. It's a 2-bed flat provided by a private landlord, we have a shared contract b",
-      "url": "https://reddit.com/r/HousingUK/comments/1s7y0qi/need_help_dealing_with_toxic_and_hassling/",
-      "sentiment": "neutral",
-      "locations": [],
-      "sub": "HousingUK",
-      "score": 1
-    },
-    {
-      "type": "reddit",
-      "title": "Lack of housing security without succession rights",
-      "text": "Based in England. \n\n\n\nI am becoming increasingly anxious about the lack of housing security myself and my dependant brother have. \n\nI am in my 30s, physically disabled and chronically ill, and the ful",
-      "url": "https://reddit.com/r/HousingUK/comments/1s7u6tc/lack_of_housing_security_without_succession_rights/",
-      "sentiment": "neutral",
-      "locations": [],
-      "sub": "HousingUK",
-      "score": 1
-    },
-    {
-      "type": "reddit",
-      "title": "A Review of the Top Real Estate Developers in the UK",
-      "text": "&amp;#x200B;\n\nAny real estate market in the world looks simple from the outside\u2026 but once you start visiting projects and comparing developers, the differences become very clear.\n\nHere I\u2019ll try to giv",
-      "url": "https://reddit.com/r/HousingUK/comments/1s7q9cr/a_review_of_the_top_real_estate_developers_in_the/",
-      "sentiment": "neutral",
-      "locations": [],
-      "sub": "HousingUK",
-      "score": 0
-    },
-    {
-      "type": "reddit",
-      "title": "Accidental house fire in rented property \u2013 will we have to pay?",
-      "text": "Hi, I\u2019m based in England and recently had an accidental fire in my rented house. I was taken to hospital for smoke inhalation but I\u2019m okay now.\n\nThe fire was in my bedroom (likely caused by a candle),",
-      "url": "https://reddit.com/r/HousingUK/comments/1s78ihq/accidental_house_fire_in_rented_property_will_we/",
-      "sentiment": "neutral",
-      "locations": [],
-      "sub": "HousingUK",
-      "score": 1
-    },
-    {
-      "type": "reddit",
-      "title": "Just secured a new rental property and I\u2019m overthinking everything!",
-      "text": "Hi all\n\nSo I\u2019ve been renting for 5 years in a \u2018make do\u2019 property and a \u2018make do\u2019 area. Recently I secured a new rental in my dream location, close to family and a lovely house. Literally my dreams com",
-      "url": "https://reddit.com/r/HousingUK/comments/1s73fyr/just_secured_a_new_rental_property_and_im/",
-      "sentiment": "neutral",
-      "locations": [],
-      "sub": "HousingUK",
-      "score": 1
-    },
-    {
-      "type": "reddit",
-      "title": "New build situation - worth going for?",
-      "text": "Recently we found out about a new build development local to us (SE England) with a few 'discount market value' 2 bed houses available for 308-316k instead of their 'market value' of \\~400k. We're FTB",
-      "url": "https://reddit.com/r/HousingUK/comments/1s64x75/new_build_situation_worth_going_for/",
-      "sentiment": "neutral",
-      "locations": [],
-      "sub": "HousingUK",
-      "score": 1
-    },
-    {
-      "type": "reddit",
-      "title": "Giving tenants flexible notice",
-      "text": "My partner and I need to sell our London flat. It has tenants in who have been there for years. Ideally we would like to give them 4 months notice so they leave by September 1st. \n\nBut if this is goin",
-      "url": "https://reddit.com/r/HousingUK/comments/1s61zg3/giving_tenants_flexible_notice/",
+      "title": "Landlord wants to sell property. Can I be evicted before my fixed term ends in Oct 2026?",
+      "text": "**Post Body:**\n\nHi everyone,\n\nI am looking for some advice regarding my current tenancy in London.\n\n**The Facts:**\n\n* **Tenancy Type:** Assured Shorthold Tenancy (AST).\n* **Term:** Fixed term from 24t",
+      "url": "https://reddit.com/r/HousingUK/comments/1s1p6vx/landlord_wants_to_sell_property_can_i_be_evicted/",
       "sentiment": "neutral",
       "locations": [
         "London"
       ],
       "sub": "HousingUK",
+      "score": 1
+    },
+    {
+      "type": "reddit",
+      "title": "Section 21 after 10 years",
+      "text": "No fault eviction apparently so section 21 served 13 th February served on myself my son and hubby even though I am\n\nThe only person on the tenancy and got my son\u2019s name completely wrong !\n\nI have kid",
+      "url": "https://reddit.com/r/HousingUK/comments/1rr31o8/section_21_after_10_years/",
+      "sentiment": "neutral",
+      "locations": [],
+      "sub": "HousingUK",
       "score": 0
     },
     {
       "type": "reddit",
-      "title": "Renting agency issues - agency gives no information",
-      "text": "Hi all! \n\nI just need to seek some advice since no citizen advice is in my area and can\u2019t find anywhere to get some legal advice, so I come to seek help here. \n\nIn short:\n\nI am renting a place in Engl",
-      "url": "https://reddit.com/r/LegalAdviceUK/comments/1s7svfe/renting_agency_issues_agency_gives_no_information/",
+      "title": "Section 21 notice &amp; housing banding review \u2013 guidance appreciated",
+      "text": "Hi,\n\nI deleted my previous post as I think my intentions were misunderstood and I perhaps didn't express things clearly... \n\nWe\u2019ve been on our council\u2019s housing register for 5 years in a low band. We ",
+      "url": "https://reddit.com/r/HousingUK/comments/1rjf5q0/section_21_notice_housing_banding_review_guidance/",
+      "sentiment": "neutral",
+      "locations": [],
+      "sub": "HousingUK",
+      "score": 1
+    },
+    {
+      "type": "reddit",
+      "title": "Super frustrating buyer!",
+      "text": "I'll keep this as short as possible. \n\n4 people in chain\n- cash buyer for my buyers house\n- my buyer - buying mine in cash from sale if theirs \n- me \n- the property I'm buying (vacant and end of chain",
+      "url": "https://reddit.com/r/HousingUK/comments/1rj43fa/super_frustrating_buyer/",
+      "sentiment": "neutral",
+      "locations": [],
+      "sub": "HousingUK",
+      "score": 0
+    },
+    {
+      "type": "reddit",
+      "title": "Served a Section 21 Notice for 30th April England",
+      "text": "Hi everyone,\n\nWe\u2019re incredibly stressed and looking for some clarity. We\u2019ve lived in our flat for nearly 3 years (Leeds area). We recently moved from a fixed term to a periodic (monthly rolling) tenan",
+      "url": "https://reddit.com/r/HousingUK/comments/1rh1tfw/served_a_section_21_notice_for_30th_april_england/",
+      "sentiment": "neutral",
+      "locations": [
+        "Leeds"
+      ],
+      "sub": "HousingUK",
+      "score": 8
+    },
+    {
+      "type": "reddit",
+      "title": "Could serving a notice to quit a joint tenancy forces my flatmate to leave too?",
+      "text": "I (F32) am on a joint periodic tenancy with my flatmate\n\n(M42) since September 2025. We live in Scotland.\n\nIn the past six months he has already accumulated two months of rent arrears without ever tel",
+      "url": "https://reddit.com/r/LegalAdviceUK/comments/1s6oset/could_serving_a_notice_to_quit_a_joint_tenancy/",
       "sentiment": "neutral",
       "locations": [],
       "sub": "LegalAdviceUK",
-      "score": 0
+      "score": 10
     },
     {
       "type": "reddit",
-      "title": "England - cracks in walls in apartment",
-      "text": "I have lived in my rented property for over 3 years. Cracks have developed where wall meets wall, wall meets ceiling, and wall meets skirting boards. My landlords refuse to fix these, saying it is a d",
-      "url": "https://reddit.com/r/LegalAdviceUK/comments/1s7p3v0/england_cracks_in_walls_in_apartment/",
-      "sentiment": "neutral",
+      "title": "Complaining to council re landlord",
+      "text": "I got an illegal sec21 (2 months into my tenancy). I chose to move in the notice period because o found a really nice place and didn\u2019t want to delay the inevitable. However, I\u2019m very upset over the fi",
+      "url": "https://reddit.com/r/LegalAdviceUK/comments/1s5ik9b/complaining_to_council_re_landlord/",
+      "sentiment": "negative",
       "locations": [],
       "sub": "LegalAdviceUK",
       "score": 0
@@ -206,168 +219,181 @@
   ],
   "indexes": {
     "problem_severity": {
-      "Rental affordability": {
-        "score": 30.6,
-        "survey_reports": 5,
-        "survey_pct": 19.2,
-        "social_hits": 363,
+      "Poor conditions": {
+        "score": 35.3,
+        "survey_reports": 8,
+        "survey_pct": 28.6,
+        "social_hits": 60,
         "rank": 1
       },
       "High upfront costs": {
-        "score": 29.5,
+        "score": 31.7,
         "survey_reports": 6,
-        "survey_pct": 23.1,
-        "social_hits": 40,
+        "survey_pct": 21.4,
+        "social_hits": 224,
         "rank": 2
       },
-      "Landlord issues": {
-        "score": 26.8,
-        "survey_reports": 3,
-        "survey_pct": 11.5,
-        "social_hits": 735,
+      "Rental affordability": {
+        "score": 29.9,
+        "survey_reports": 5,
+        "survey_pct": 17.9,
+        "social_hits": 2055,
         "rank": 3
       },
-      "Market competition": {
-        "score": 26.8,
-        "survey_reports": 3,
-        "survey_pct": 11.5,
-        "social_hits": 89,
+      "Discrimination": {
+        "score": 28.1,
+        "survey_reports": 4,
+        "survey_pct": 14.3,
+        "social_hits": 91,
         "rank": 4
       },
-      "Poor conditions": {
-        "score": 24.4,
-        "survey_reports": 8,
-        "survey_pct": 30.8,
-        "social_hits": 10,
+      "Landlord issues": {
+        "score": 26.4,
+        "survey_reports": 3,
+        "survey_pct": 10.7,
+        "social_hits": 4272,
         "rank": 5
       },
-      "Property management failures": {
-        "score": 22.9,
-        "survey_reports": 1,
-        "survey_pct": 3.8,
-        "social_hits": 502,
+      "Market competition": {
+        "score": 26.4,
+        "survey_reports": 3,
+        "survey_pct": 10.7,
+        "social_hits": 475,
         "rank": 6
       },
-      "Housing supply concerns": {
-        "score": 22.9,
-        "survey_reports": 1,
-        "survey_pct": 3.8,
-        "social_hits": 319,
+      "Energy & bills": {
+        "score": 24.6,
+        "survey_reports": 2,
+        "survey_pct": 7.1,
+        "social_hits": 69,
         "rank": 7
       },
-      "Letting agency issues": {
-        "score": 22.9,
+      "Property management failures": {
+        "score": 22.8,
         "survey_reports": 1,
-        "survey_pct": 3.8,
-        "social_hits": 51,
+        "survey_pct": 3.6,
+        "social_hits": 2981,
         "rank": 8
       },
-      "Discrimination": {
-        "score": 18.2,
-        "survey_reports": 4,
-        "survey_pct": 15.4,
-        "social_hits": 15,
+      "Housing supply concerns": {
+        "score": 22.8,
+        "survey_reports": 1,
+        "survey_pct": 3.6,
+        "social_hits": 1866,
         "rank": 9
       },
-      "Energy & bills": {
-        "score": 12.8,
-        "survey_reports": 2,
-        "survey_pct": 7.7,
-        "social_hits": 10,
+      "Letting agency issues": {
+        "score": 22.8,
+        "survey_reports": 1,
+        "survey_pct": 3.6,
+        "social_hits": 346,
         "rank": 10
       },
-      "Contractor/maintenance access": {
-        "score": 11.8,
-        "survey_reports": 3,
-        "survey_pct": 11.5,
-        "social_hits": 0,
+      "Positive experience": {
+        "score": 22.8,
+        "survey_reports": 1,
+        "survey_pct": 3.6,
+        "social_hits": 50,
         "rank": 11
       },
-      "Positive experience": {
-        "score": 10.9,
+      "Ways": {
+        "score": 22.8,
         "survey_reports": 1,
-        "survey_pct": 3.8,
-        "social_hits": 10,
+        "survey_pct": 3.6,
+        "social_hits": 57,
         "rank": 12
       },
-      "General rental concern": {
-        "score": 9.8,
-        "survey_reports": 2,
-        "survey_pct": 7.7,
+      "Contractor/maintenance access": {
+        "score": 11.4,
+        "survey_reports": 3,
+        "survey_pct": 10.7,
         "social_hits": 0,
         "rank": 13
       },
-      "No-pet policies": {
-        "score": 7.9,
-        "survey_reports": 1,
-        "survey_pct": 3.8,
+      "General rental concern": {
+        "score": 11.4,
+        "survey_reports": 3,
+        "survey_pct": 10.7,
         "social_hits": 0,
         "rank": 14
       },
       "Mental health impact": {
-        "score": 7.9,
+        "score": 8.1,
         "survey_reports": 1,
-        "survey_pct": 3.8,
-        "social_hits": 0,
+        "survey_pct": 3.6,
+        "social_hits": 1,
         "rank": 15
       },
-      "Unable to save/build future": {
-        "score": 7.9,
+      "No-pet policies": {
+        "score": 7.8,
         "survey_reports": 1,
-        "survey_pct": 3.8,
+        "survey_pct": 3.6,
         "social_hits": 0,
         "rank": 16
       },
-      "Tenure insecurity": {
-        "score": 7.9,
+      "Unable to save/build future": {
+        "score": 7.8,
         "survey_reports": 1,
-        "survey_pct": 3.8,
+        "survey_pct": 3.6,
         "social_hits": 0,
         "rank": 17
+      },
+      "Tenure insecurity": {
+        "score": 7.8,
+        "survey_reports": 1,
+        "survey_pct": 3.6,
+        "social_hits": 0,
+        "rank": 18
       }
     },
     "regional_priority": {
-      "North West": {
-        "score": 53.9,
-        "responses": 10,
-        "avg_broken": 6.3,
-        "social_mentions": 10
-      },
       "London": {
-        "score": 52.1,
+        "score": 136.1,
         "responses": 7,
         "avg_broken": 7.7,
-        "social_mentions": 10
+        "social_mentions": 66
+      },
+      "North West": {
+        "score": 130.5,
+        "responses": 11,
+        "avg_broken": 6.2,
+        "social_mentions": 60
       },
       "West Midlands": {
-        "score": 30.5,
+        "score": 68.0,
         "responses": 1,
         "avg_broken": 7.0,
-        "social_mentions": 5
+        "social_mentions": 30
       },
       "Yorkshire & Humber": {
-        "score": 27.5,
+        "score": 65.0,
         "responses": 1,
         "avg_broken": 6.0,
-        "social_mentions": 5
+        "social_mentions": 30
+      },
+      "South West": {
+        "score": 64.0,
+        "responses": 2,
+        "avg_broken": 5.0,
+        "social_mentions": 30
+      },
+      "East of England": {
+        "score": 38.0,
+        "responses": 1,
+        "avg_broken": 6.0,
+        "social_mentions": 12
+      },
+      "Scotland": {
+        "score": 29.0,
+        "responses": 1,
+        "avg_broken": 3.0,
+        "social_mentions": 12
       },
       "North East": {
         "score": 26.0,
         "responses": 1,
         "avg_broken": 8.0,
         "social_mentions": 0
-      },
-      "South West": {
-        "score": 24.5,
-        "responses": 1,
-        "avg_broken": 5.0,
-        "social_mentions": 5
-      },
-      "East of England": {
-        "score": 23.0,
-        "responses": 1,
-        "avg_broken": 6.0,
-        "social_mentions": 2
       },
       "Wales": {
         "score": 22.0,
@@ -380,122 +406,122 @@
         "responses": 1,
         "avg_broken": 5.0,
         "social_mentions": 0
-      },
-      "Scotland": {
-        "score": 11.0,
-        "responses": 1,
-        "avg_broken": 3.0,
-        "social_mentions": 0
       }
     },
     "market_opportunity": {
       "Poor conditions": {
-        "score": 57.3,
+        "score": 56.4,
         "solvability": 7,
         "profit": 8,
-        "demand_pct": 30.8
+        "demand_pct": 28.6
       },
       "Energy & bills": {
-        "score": 54.1,
+        "score": 53.9,
         "solvability": 8,
         "profit": 9,
-        "demand_pct": 7.7
+        "demand_pct": 7.1
       },
       "High upfront costs": {
-        "score": 48.2,
+        "score": 47.6,
         "solvability": 6,
         "profit": 7,
-        "demand_pct": 23.1
+        "demand_pct": 21.4
       },
       "Landlord issues": {
-        "score": 37.6,
+        "score": 37.3,
         "solvability": 5,
         "profit": 6,
-        "demand_pct": 11.5
+        "demand_pct": 10.7
       },
       "Contractor/maintenance access": {
-        "score": 34.6,
+        "score": 34.3,
         "solvability": 5,
         "profit": 5,
-        "demand_pct": 11.5
+        "demand_pct": 10.7
       },
       "General rental concern": {
-        "score": 33.1,
+        "score": 34.3,
         "solvability": 5,
         "profit": 5,
-        "demand_pct": 7.7
+        "demand_pct": 10.7
       },
       "No-pet policies": {
-        "score": 31.5,
+        "score": 31.4,
         "solvability": 5,
         "profit": 5,
-        "demand_pct": 3.8
+        "demand_pct": 3.6
       },
       "Property management failures": {
-        "score": 31.5,
+        "score": 31.4,
         "solvability": 5,
         "profit": 5,
-        "demand_pct": 3.8
+        "demand_pct": 3.6
       },
       "Mental health impact": {
-        "score": 31.5,
+        "score": 31.4,
         "solvability": 5,
         "profit": 5,
-        "demand_pct": 3.8
+        "demand_pct": 3.6
       },
       "Housing supply concerns": {
-        "score": 31.5,
+        "score": 31.4,
         "solvability": 5,
         "profit": 5,
-        "demand_pct": 3.8
+        "demand_pct": 3.6
       },
       "Letting agency issues": {
-        "score": 31.5,
+        "score": 31.4,
         "solvability": 5,
         "profit": 5,
-        "demand_pct": 3.8
+        "demand_pct": 3.6
       },
       "Unable to save/build future": {
-        "score": 31.5,
+        "score": 31.4,
         "solvability": 5,
         "profit": 5,
-        "demand_pct": 3.8
+        "demand_pct": 3.6
       },
       "Positive experience": {
-        "score": 31.5,
+        "score": 31.4,
         "solvability": 5,
         "profit": 5,
-        "demand_pct": 3.8
+        "demand_pct": 3.6
+      },
+      "Ways": {
+        "score": 31.4,
+        "solvability": 5,
+        "profit": 5,
+        "demand_pct": 3.6
       },
       "Discrimination": {
-        "score": 27.2,
+        "score": 26.7,
         "solvability": 4,
         "profit": 3,
-        "demand_pct": 15.4
-      },
-      "Rental affordability": {
-        "score": 22.7,
-        "solvability": 2,
-        "profit": 3,
-        "demand_pct": 19.2
-      },
-      "Market competition": {
-        "score": 22.6,
-        "solvability": 1,
-        "profit": 5,
-        "demand_pct": 11.5
+        "demand_pct": 14.3
       },
       "Tenure insecurity": {
-        "score": 22.5,
+        "score": 22.4,
         "solvability": 3,
         "profit": 4,
-        "demand_pct": 3.8
+        "demand_pct": 3.6
+      },
+      "Market competition": {
+        "score": 22.3,
+        "solvability": 1,
+        "profit": 5,
+        "demand_pct": 10.7
+      },
+      "Rental affordability": {
+        "score": 22.1,
+        "solvability": 2,
+        "profit": 3,
+        "demand_pct": 17.9
       }
     },
     "credibility": {
-      "verified_sources": 653,
-      "total_sources": 2379,
-      "credibility_pct": 27.4,
+      "verified_sources": 3759,
+      "total_sources": 14138,
+      "credibility_pct": 26.6,
       "survey_backed": 9,
       "social_only": 1
     },
@@ -514,32 +540,74 @@
       "Letting agency issues": "insufficient_data",
       "Energy & bills": "stable",
       "Unable to save/build future": "insufficient_data",
-      "General rental concern": "stable",
+      "General rental concern": "accelerating",
       "Tenure insecurity": "insufficient_data",
-      "Positive experience": "insufficient_data"
+      "Positive experience": "insufficient_data",
+      "Ways": "insufficient_data"
     }
   },
   "scanner_summary": {
-    "total_news": 2379,
-    "verified_news": 653,
-    "reddit_posts": 90,
+    "total_news": 14138,
+    "verified_news": 3759,
+    "reddit_posts": 534,
     "locations": {
-      "London": 10,
-      "Manchester": 5,
-      "Bristol": 5,
-      "Belfast": 5,
-      "Birmingham": 5,
-      "Leeds": 5,
-      "Liverpool": 5,
-      "Cambridge": 2
+      "London": 66,
+      "Leeds": 30,
+      "Bristol": 30,
+      "Birmingham": 30,
+      "Liverpool": 30,
+      "Manchester": 30,
+      "Cambridge": 12,
+      "Glasgow": 12,
+      "Belfast": 2
     },
     "agencies": [
       "Why a New Era of Property",
-      "Healthy Homes"
+      "Healthy Homes",
+      "The Decent Homes",
+      "My Property"
     ],
     "alerts": [
       {
-        "ts": "2026-03-30T16:31:51.707873",
+        "ts": "2026-03-31T09:49:10.441604",
+        "problem": "Multiple negative reports",
+        "location": "London",
+        "severity": "MEDIUM",
+        "sources_count": 23,
+        "sentiment": {
+          "negative": 3,
+          "positive": 0
+        },
+        "status": "NEW",
+        "sources": [
+          "Landlord wants to sell property. Can I be evicted before my fixed term ends in O",
+          "London renters at crisis point as number of homes to rent falls - NRLA",
+          "Rental crisis in London worsens: \u2018Payments border on the obscene\u2019 - City AM",
+          "Rental crisis in London \u2018deepens further\u2019, landlords warn - thenegotiator.co.uk",
+          "Renters need to earn at least \u00a340,000 to afford a room in London - The Telegraph"
+        ]
+      },
+      {
+        "ts": "2026-03-31T10:04:27.261501",
+        "problem": "Multiple negative reports",
+        "location": "London",
+        "severity": "MEDIUM",
+        "sources_count": 27,
+        "sentiment": {
+          "negative": 3,
+          "positive": 0
+        },
+        "status": "NEW",
+        "sources": [
+          "London renters at crisis point as number of homes to rent falls - NRLA",
+          "Rental crisis in London worsens: \u2018Payments border on the obscene\u2019 - City AM",
+          "Rental crisis in London \u2018deepens further\u2019, landlords warn - thenegotiator.co.uk",
+          "Renters need to earn at least \u00a340,000 to afford a room in London - The Telegraph",
+          "Jack Shenker \u00b7 Renters v. Rentiers - London Review of Books"
+        ]
+      },
+      {
+        "ts": "2026-03-31T10:19:45.175439",
         "problem": "Multiple negative reports",
         "location": "London",
         "severity": "MEDIUM",
@@ -551,18 +619,18 @@
         "status": "NEW",
         "sources": [
           "Giving tenants flexible notice",
+          "Probate and Banking Advice Following Death",
           "Buying a leasehold caf\u00e9 with ~3 years left \u2013 landlord won\u2019t discuss renewal earl",
-          "Sell our flat or rent it out? (To go travelling)",
-          "asset rich, cash poor + hoarding",
-          "London renters at crisis point as number of homes to rent falls - NRLA"
+          "33M / \u00a3106k Pension - Sanity check on moving from RL \"Balanced\" to a more growth",
+          "Sell our flat or rent it out? (To go travelling)"
         ]
       },
       {
-        "ts": "2026-03-30T16:47:09.078194",
+        "ts": "2026-03-31T10:35:02.026732",
         "problem": "Multiple negative reports",
         "location": "London",
         "severity": "MEDIUM",
-        "sources_count": 25,
+        "sources_count": 27,
         "sentiment": {
           "negative": 3,
           "positive": 0
@@ -572,16 +640,16 @@
           "Wait, buy or move?",
           "12 month tenancy - no break clause but landlord won\u2019t do repairs (London, Englan",
           "London renters at crisis point as number of homes to rent falls - NRLA",
-          "Rental crisis in London \u2018deepens further\u2019, landlords warn - thenegotiator.co.uk",
-          "Rental crisis in London worsens: \u2018Payments border on the obscene\u2019 - City AM"
+          "Rental crisis in London worsens: \u2018Payments border on the obscene\u2019 - City AM",
+          "Rental crisis in London \u2018deepens further\u2019, landlords warn - thenegotiator.co.uk"
         ]
       },
       {
-        "ts": "2026-03-30T17:02:28.206809",
+        "ts": "2026-03-31T10:50:19.979763",
         "problem": "Multiple negative reports",
         "location": "London",
         "severity": "MEDIUM",
-        "sources_count": 28,
+        "sources_count": 30,
         "sentiment": {
           "negative": 3,
           "positive": 0
@@ -594,51 +662,13 @@
           "Ongoing roof leak, landlord not fixing it, council not helping \u2013 what can I do? ",
           "Sell our flat or rent it out? (To go travelling)"
         ]
-      },
-      {
-        "ts": "2026-03-30T17:17:46.977327",
-        "problem": "Multiple negative reports",
-        "location": "London",
-        "severity": "MEDIUM",
-        "sources_count": 24,
-        "sentiment": {
-          "negative": 3,
-          "positive": 0
-        },
-        "status": "NEW",
-        "sources": [
-          "Landlord wants to sell property. Can I be evicted before my fixed term ends in O",
-          "London renters at crisis point as number of homes to rent falls - NRLA",
-          "Rental crisis in London \u2018deepens further\u2019, landlords warn - thenegotiator.co.uk",
-          "Rental crisis in London worsens: \u2018Payments border on the obscene\u2019 - City AM",
-          "Jack Shenker \u00b7 Renters v. Rentiers - London Review of Books"
-        ]
-      },
-      {
-        "ts": "2026-03-30T17:33:04.523012",
-        "problem": "Multiple negative reports",
-        "location": "London",
-        "severity": "MEDIUM",
-        "sources_count": 23,
-        "sentiment": {
-          "negative": 3,
-          "positive": 0
-        },
-        "status": "NEW",
-        "sources": [
-          "London renters at crisis point as number of homes to rent falls - NRLA",
-          "Rental crisis in London \u2018deepens further\u2019, landlords warn - thenegotiator.co.uk",
-          "Rental crisis in London worsens: \u2018Payments border on the obscene\u2019 - City AM",
-          "Jack Shenker \u00b7 Renters v. Rentiers - London Review of Books",
-          "London's 'spiralling housing crisis' in numbers - BBC"
-        ]
       }
     ],
     "sentiment": {
-      "positive": 2,
-      "negative": 131,
-      "mixed": 11,
-      "neutral": 2325
+      "positive": 11,
+      "negative": 830,
+      "mixed": 103,
+      "neutral": 13728
     }
   }
 }

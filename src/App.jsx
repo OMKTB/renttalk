@@ -779,7 +779,7 @@ function IntelCentre({data,txts,fixes,rC,pC,pL,n,avg}){
   const INTEL_FUNC="/.netlify/functions/intel";
   const [socialData,setSocialData]=useState(null);
   const [pkg,setPkg]=useState(null);
-  const loadPkg=()=>{fetch("https://jsonblob.com/api/jsonBlob/019d3b83-817c-7639-bdf9-1f25e2c1ee2d",{headers:{"Accept":"application/json"}}).then(r=>r.json()).then(d=>{if(d.intel_package)setPkg(d.intel_package);}).catch(()=>{});};
+  const loadPkg=()=>{fetch("https://jsonblob.com/api/jsonBlob/019d442c-0a2c-793a-8866-9ba75ef5e02c",{headers:{"Accept":"application/json"}}).then(r=>r.json()).then(d=>{if(d.intel_package)setPkg(d.intel_package);}).catch(()=>{});};
   useEffect(()=>{loadPkg();},[]);
   const [socialLoading,setSocialLoading]=useState(false);
 

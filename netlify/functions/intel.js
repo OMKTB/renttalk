@@ -1,5 +1,5 @@
 const DATA_BLOB = "https://jsonblob.com/api/jsonBlob/019d3aec-1fd0-7391-86f3-9e085eba2130";
-const INTEL_BLOB = "https://jsonblob.com/api/jsonBlob/019d3b83-817c-7639-bdf9-1f25e2c1ee2d";
+const INTEL_BLOB = "https://jsonblob.com/api/jsonBlob/019d442c-0a2c-793a-8866-9ba75ef5e02c";
 const H = {"Content-Type":"application/json","Accept":"application/json"};
 const CORS = {"Access-Control-Allow-Origin":"*","Access-Control-Allow-Headers":"Content-Type","Access-Control-Allow-Methods":"GET,POST,OPTIONS","Content-Type":"application/json"};
 
