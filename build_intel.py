@@ -8,8 +8,8 @@ ctx.check_hostname = False
 ctx.verify_mode = ssl.CERT_NONE
 
 HOME = "/Users/omaralrashed/renttalk"
-SURVEY_BLOB = "https://jsonblob.com/api/jsonBlob/019d4029-e73b-7e5f-9d5a-f4c1958c41b9"
-INTEL_BLOB = "https://jsonblob.com/api/jsonBlob/019d442c-0a2c-793a-8866-9ba75ef5e02c"
+SURVEY_BLOB = "https://jsonblob.com/api/jsonBlob/019d4f5d-86a5-796a-b672-0cd57bc79864"
+INTEL_BLOB = "https://jsonblob.com/api/jsonBlob/019d541a-e20c-7466-a13e-fb07fad3ec27"
 
 # Load data
 with open(f'{HOME}/ig_scan_findings.json') as f: scanner = json.load(f)

@@ -4,7 +4,7 @@ import urllib.request, json, time, os, re
 from datetime import datetime
 
 LOG = os.path.expanduser("~/renttalk/instagram_intel.json")
-BLOB = "https://jsonblob.com/api/jsonBlob/019d442c-0a2c-793a-8866-9ba75ef5e02c"
+BLOB = "https://jsonblob.com/api/jsonBlob/019d541a-e20c-7466-a13e-fb07fad3ec27"
 
 # Hashtags to monitor — mapped to problem categories
 HASHTAGS = {
