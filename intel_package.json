@@ -1,5 +1,5 @@
 {
-  "generated": "2026-04-03T13:07:45.437896",
+  "generated": "2026-04-03T14:25:54.503703",
   "cross_reference": {
     "London": {
       "social_mentions": 60,
@@ -15,6 +15,24 @@
         "Market competition": 1,
         "Housing supply concerns": 1,
         "Tenure insecurity": 1
+      },
+      "alignment": "confirmed"
+    },
+    "Manchester": {
+      "social_mentions": 30,
+      "survey_responses": 11,
+      "region": "North West",
+      "survey_problems": {
+        "Poor conditions": 3,
+        "Landlord issues": 2,
+        "Contractor/maintenance access": 2,
+        "Rental affordability": 2,
+        "Market competition": 2,
+        "No-pet policies": 1,
+        "Property management failures": 1,
+        "Positive experience": 2,
+        "Discrimination": 1,
+        "General rental concern": 2
       },
       "alignment": "confirmed"
     },
@@ -66,33 +84,15 @@
       },
       "alignment": "confirmed"
     },
-    "Manchester": {
-      "social_mentions": 30,
-      "survey_responses": 11,
-      "region": "North West",
-      "survey_problems": {
-        "Poor conditions": 3,
-        "Landlord issues": 2,
-        "Contractor/maintenance access": 2,
-        "Rental affordability": 2,
-        "Market competition": 2,
-        "No-pet policies": 1,
-        "Property management failures": 1,
-        "Positive experience": 2,
-        "Discrimination": 1,
-        "General rental concern": 2
-      },
-      "alignment": "confirmed"
-    },
     "Nottingham": {
-      "social_mentions": 28,
+      "social_mentions": 27,
       "survey_responses": 0,
       "region": "East Midlands",
       "survey_problems": {},
       "alignment": "social_only"
     },
     "Cambridge": {
-      "social_mentions": 5,
+      "social_mentions": 4,
       "survey_responses": 1,
       "region": "East of England",
       "survey_problems": {
@@ -112,80 +112,6 @@
   "social_cards": [
     {
       "type": "reddit",
-      "title": "Wait, buy or move?",
-      "text": "Looking for some advice as finding ourselves in a weird situation. A quick overview: \n\nMoved to London about 5 months ago. Completely new to the city so had to take a punt on an area and the plan was ",
-      "url": "https://reddit.com/r/HousingUK/comments/1rxush9/wait_buy_or_move/",
-      "sentiment": "neutral",
-      "locations": [
-        "London"
-      ],
-      "sub": "HousingUK",
-      "score": 2
-    },
-    {
-      "type": "reddit",
-      "title": "Recurring Mould issue, landlord seems awkward.",
-      "text": "Been having a recurring black mould issue in our rental property (UK) since around November time. Informed the estate agents who have recently completed an mould inspection and sent us the results.\n\nT",
-      "url": "https://reddit.com/r/HousingUK/comments/1rkfqfg/recurring_mould_issue_landlord_seems_awkward/",
-      "sentiment": "negative",
-      "locations": [],
-      "sub": "HousingUK",
-      "score": 1
-    },
-    {
-      "type": "reddit",
-      "title": "Given notice to leave on tenancy after landlord decided to sell instead of fix structural issues and bathroom (Scotland)",
-      "text": "Hello,\n\nSo last week we were served with notice to leave from tenancy we have stayed at for 11 years. We have been back and forth with letting agent for years about the bathroom needing fixed and they",
-      "url": "https://reddit.com/r/LegalAdviceUK/comments/1ry2zqu/given_notice_to_leave_on_tenancy_after_landlord/",
-      "sentiment": "neutral",
-      "locations": [],
-      "sub": "LegalAdviceUK",
-      "score": 2
-    },
-    {
-      "type": "reddit",
-      "title": "12 month tenancy - no break clause but landlord won\u2019t do repairs (London, England)",
-      "text": "Hi! We want to leave our flat as we have been asking our landlord to do repairs since November and he either doesn\u2019t reply or doesn\u2019t follow through. This includes damp walls, leaks through skirting b",
-      "url": "https://reddit.com/r/LegalAdviceUK/comments/1rv88wb/12_month_tenancy_no_break_clause_but_landlord/",
-      "sentiment": "mixed",
-      "locations": [
-        "London"
-      ],
-      "sub": "LegalAdviceUK",
-      "score": 2
-    },
-    {
-      "type": "reddit",
-      "title": "Legal requirements for a rental end with no tenancy agreement, however more complex due to mould. England",
-      "text": "Hi everyone, my friends (both in their late 60s) are in this situation. The husband took over the tenancy of this flat when his parents died around 1989, his parents started it around 1965. The wife's",
-      "url": "https://reddit.com/r/LegalAdviceUK/comments/1rtli7m/legal_requirements_for_a_rental_end_with_no/",
-      "sentiment": "neutral",
-      "locations": [],
-      "sub": "LegalAdviceUK",
-      "score": 0
-    },
-    {
-      "type": "reddit",
-      "title": "Roof leaks &amp; mould: End of Tenancy Advice",
-      "text": "Hi Everyone,\n\nI am new to Reddit so pardon me in case this is not the right thread.\n\nI am writing whilst approaching the end of a nightmarish 6 month long flat rental.\n\nI rented an \u2018executive flat\u2019 (s",
-      "url": "https://reddit.com/r/LegalAdviceUK/comments/1rsk056/roof_leaks_mould_end_of_tenancy_advice/",
-      "sentiment": "neutral",
-      "locations": [],
-      "sub": "LegalAdviceUK",
-      "score": 1
-    },
-    {
-      "type": "reddit",
-      "title": "Legal action by management over service charge",
-      "text": "Hi All. Need advise on how to proceed with the situation below please. Purchased a flat late 2024 in the northwest and it was let just before the end of year. During purchase of the flat I was made aw",
-      "url": "https://reddit.com/r/LegalAdviceUK/comments/1rphdli/legal_action_by_management_over_service_charge/",
-      "sentiment": "neutral",
-      "locations": [],
-      "sub": "LegalAdviceUK",
-      "score": 2
-    },
-    {
-      "type": "reddit",
       "title": "Returning to UK after long period overseas - renting &amp; credit scores",
       "text": "I will be returning to the UK after 15 years overseas. The last time I rented was while I was in university and there was no credit check made. \n\n  \nI'm reading that newcomers will often need to pay a",
       "url": "https://reddit.com/r/HousingUK/comments/1sb28vb/returning_to_uk_after_long_period_overseas/",
@@ -193,6 +119,38 @@
       "locations": [],
       "sub": "HousingUK",
       "score": 1
+    },
+    {
+      "type": "reddit",
+      "title": "Village Rentals?",
+      "text": "After our recent sale (and location move to a village outside of Bath) fell through, our solicitor - who lives locally in the area - suggested renting instead, referring to many families she knows who",
+      "url": "https://reddit.com/r/HousingUK/comments/1sah1fa/village_rentals/",
+      "sentiment": "neutral",
+      "locations": [],
+      "sub": "HousingUK",
+      "score": 1
+    },
+    {
+      "type": "reddit",
+      "title": "Buying 1 bed in London",
+      "text": "Hi I am considering buying a flat in London. I have accepted leasehold. I didn\u2019t want to buy a new build because of the new build premium so I went for a modern building from 2017.\n\nI am currently in ",
+      "url": "https://reddit.com/r/HousingUK/comments/1sacbj7/buying_1_bed_in_london/",
+      "sentiment": "neutral",
+      "locations": [
+        "London"
+      ],
+      "sub": "HousingUK",
+      "score": 8
+    },
+    {
+      "type": "reddit",
+      "title": "Service charge has gone up 800% in 6 years",
+      "text": "(In England - cross posted in Legal Advice UK)\n\nI suspect there\u2019s not really much I can do, but if anyone can provide any sort of guidance I would be very appreciative.\n\nI just received my 2026 servic",
+      "url": "https://reddit.com/r/HousingUK/comments/1s9yltb/service_charge_has_gone_up_800_in_6_years/",
+      "sentiment": "neutral",
+      "locations": [],
+      "sub": "HousingUK",
+      "score": 101
     },
     {
       "type": "reddit",
@@ -206,15 +164,53 @@
     },
     {
       "type": "reddit",
-      "title": "International Student - When to Start Applying for Rentals",
-      "text": "Hi Everyone, \n\n  \nI (23F) just got into a postgrad program and will be moving to London in mid-September for about 9 months to do my Masters'. I have already decided where I want to live (Finchley/Bar",
-      "url": "https://reddit.com/r/HousingUK/comments/1s8y7gy/international_student_when_to_start_applying_for/",
+      "title": "LL pressuring me to sign lease renewal. Apartment went into periodic contact from mid-February. What should I do?",
+      "text": "Renting in England. Landlord has been pressuring me about renewing the lease for my flat. I wanted to assess my options. The lease expired mid-February and went into month to month. All rent payments ",
+      "url": "https://reddit.com/r/HousingUK/comments/1s9eyy7/ll_pressuring_me_to_sign_lease_renewal_apartment/",
       "sentiment": "neutral",
-      "locations": [
-        "London"
-      ],
+      "locations": [],
+      "sub": "HousingUK",
+      "score": 2
+    },
+    {
+      "type": "reddit",
+      "title": "FTB-Made an offer but need advice",
+      "text": "I've been looking at houses for around a year now. Currently living with parents so I am not in too much of a rush to buy. I have viewed a 2 bed property that is close to where I currently live and th",
+      "url": "https://reddit.com/r/HousingUK/comments/1s9dtx7/ftbmade_an_offer_but_need_advice/",
+      "sentiment": "neutral",
+      "locations": [],
       "sub": "HousingUK",
       "score": 1
+    },
+    {
+      "type": "reddit",
+      "title": "Do UK estate agents care if bank statements show gambling? (To rent)",
+      "text": "I am trying to rent in the UK and have a viewing tomorrow, I was going to bring a binder I have full of essential income information to show I can afford the property (it's a high end spot but is that",
+      "url": "https://reddit.com/r/HousingUK/comments/1s90wh8/do_uk_estate_agents_care_if_bank_statements_show/",
+      "sentiment": "neutral",
+      "locations": [],
+      "sub": "HousingUK",
+      "score": 0
+    },
+    {
+      "type": "reddit",
+      "title": "UK Finance Manager \u2014 pressured by directors to adjust year-end numbers. Risks and how to protect myself?",
+      "text": "Hi All,\n\n\n\nI\u2019m a Finance Manager working across a small group of limited companies in the UK. As we approach year-end, I\u2019m being pressured by directors/owners to make adjustments intended to improve t",
+      "url": "https://reddit.com/r/LegalAdviceUK/comments/1sabpsi/uk_finance_manager_pressured_by_directors_to/",
+      "sentiment": "neutral",
+      "locations": [],
+      "sub": "LegalAdviceUK",
+      "score": 13
+    },
+    {
+      "type": "reddit",
+      "title": "Renters' Rights Act  and 1st May 2026 Transition",
+      "text": "My contractual periodic tenancy has a rent review clause (which is not in April or May).  \nI have been issued a Section 13, which I'm unsure is valid/invalid.\n\n\"Any rent increase that was agreed befor",
+      "url": "https://reddit.com/r/LegalAdviceUK/comments/1s9o384/renters_rights_act_and_1st_may_2026_transition/",
+      "sentiment": "neutral",
+      "locations": [],
+      "sub": "LegalAdviceUK",
+      "score": 3
     }
   ],
   "indexes": {
@@ -230,21 +226,21 @@
         "score": 31.7,
         "survey_reports": 6,
         "survey_pct": 21.4,
-        "social_hits": 254,
+        "social_hits": 258,
         "rank": 2
       },
       "Rental affordability": {
         "score": 29.9,
         "survey_reports": 5,
         "survey_pct": 17.9,
-        "social_hits": 1890,
+        "social_hits": 1878,
         "rank": 3
       },
       "Landlord issues": {
         "score": 28.1,
         "survey_reports": 4,
         "survey_pct": 14.3,
-        "social_hits": 4505,
+        "social_hits": 4543,
         "rank": 4
       },
       "Discrimination": {
@@ -258,35 +254,35 @@
         "score": 26.4,
         "survey_reports": 3,
         "survey_pct": 10.7,
-        "social_hits": 453,
+        "social_hits": 464,
         "rank": 6
       },
       "Letting agency issues": {
         "score": 24.6,
         "survey_reports": 2,
         "survey_pct": 7.1,
-        "social_hits": 257,
+        "social_hits": 259,
         "rank": 7
       },
       "Energy & bills": {
         "score": 24.6,
         "survey_reports": 2,
         "survey_pct": 7.1,
-        "social_hits": 89,
+        "social_hits": 84,
         "rank": 8
       },
       "Property management failures": {
         "score": 22.8,
         "survey_reports": 1,
         "survey_pct": 3.6,
-        "social_hits": 3111,
+        "social_hits": 3177,
         "rank": 9
       },
       "Housing supply concerns": {
         "score": 22.8,
         "survey_reports": 1,
         "survey_pct": 3.6,
-        "social_hits": 1778,
+        "social_hits": 1758,
         "rank": 10
       },
       "Positive experience": {
@@ -370,17 +366,17 @@
         "avg_broken": 6.0,
         "social_mentions": 30
       },
-      "East of England": {
-        "score": 27.5,
-        "responses": 1,
-        "avg_broken": 6.0,
-        "social_mentions": 5
-      },
       "North East": {
         "score": 26.0,
         "responses": 1,
         "avg_broken": 8.0,
         "social_mentions": 0
+      },
+      "East of England": {
+        "score": 26.0,
+        "responses": 1,
+        "avg_broken": 6.0,
+        "social_mentions": 4
       },
       "Wales": {
         "score": 22.0,
@@ -506,9 +502,9 @@
       }
     },
     "credibility": {
-      "verified_sources": 3354,
-      "total_sources": 14267,
-      "credibility_pct": 23.5,
+      "verified_sources": 3327,
+      "total_sources": 14264,
+      "credibility_pct": 23.3,
       "survey_backed": 11,
       "social_only": 2
     },
@@ -533,18 +529,18 @@
     }
   },
   "scanner_summary": {
-    "total_news": 14267,
-    "verified_news": 3354,
-    "reddit_posts": 370,
+    "total_news": 14264,
+    "verified_news": 3327,
+    "reddit_posts": 331,
     "locations": {
       "London": 60,
+      "Manchester": 30,
       "Birmingham": 30,
       "Leeds": 30,
       "Liverpool": 30,
       "Bristol": 30,
-      "Manchester": 30,
-      "Nottingham": 28,
-      "Cambridge": 5,
+      "Nottingham": 27,
+      "Cambridge": 4,
       "Sunderland": 3
     },
     "agencies": [
@@ -560,7 +556,26 @@
     ],
     "alerts": [
       {
-        "ts": "2026-04-03T09:54:39.652502",
+        "ts": "2026-04-03T13:24:14.688515",
+        "problem": "Multiple negative reports",
+        "location": "London",
+        "severity": "MEDIUM",
+        "sources_count": 19,
+        "sentiment": {
+          "negative": 3,
+          "positive": 0
+        },
+        "status": "NEW",
+        "sources": [
+          "What the price-to-rent ratio reveals about Britain\u2019s housing crisis - The London",
+          "London renters at crisis point as number of homes to rent falls - NRLA",
+          "Rental crisis in London worsens: \u2018Payments border on the obscene\u2019 - City AM",
+          "Rental crisis in London \u2018deepens further\u2019, landlords warn - thenegotiator.co.uk",
+          "Jack Shenker \u00b7 Renters v. Rentiers - London Review of Books"
+        ]
+      },
+      {
+        "ts": "2026-04-03T13:39:28.729130",
         "problem": "Multiple negative reports",
         "location": "London",
         "severity": "MEDIUM",
@@ -579,64 +594,45 @@
         ]
       },
       {
-        "ts": "2026-04-03T10:09:57.376264",
+        "ts": "2026-04-03T13:54:43.617717",
         "problem": "Multiple negative reports",
         "location": "London",
         "severity": "MEDIUM",
-        "sources_count": 26,
+        "sources_count": 20,
         "sentiment": {
           "negative": 3,
           "positive": 0
         },
         "status": "NEW",
         "sources": [
-          "Buying 1 bed in London",
-          "Probate and Banking Advice Following Death",
-          "33M / \u00a3106k Pension - Sanity check on moving from RL \"Balanced\" to a more growth",
-          "Sell our flat or rent it out? (To go travelling)",
-          "First time in the UK - is renting a car worth it or should I rely on public tran"
-        ]
-      },
-      {
-        "ts": "2026-04-03T10:25:14.102273",
-        "problem": "Multiple negative reports",
-        "location": "London",
-        "severity": "MEDIUM",
-        "sources_count": 23,
-        "sentiment": {
-          "negative": 3,
-          "positive": 0
-        },
-        "status": "NEW",
-        "sources": [
-          "Wait, buy or move?",
-          "12 month tenancy - no break clause but landlord won\u2019t do repairs (London, Englan",
           "What the price-to-rent ratio reveals about Britain\u2019s housing crisis - The London",
           "London renters at crisis point as number of homes to rent falls - NRLA",
-          "Rental crisis in London worsens: \u2018Payments border on the obscene\u2019 - City AM"
+          "Rental crisis in London worsens: \u2018Payments border on the obscene\u2019 - City AM",
+          "Rental crisis in London \u2018deepens further\u2019, landlords warn - thenegotiator.co.uk",
+          "Jack Shenker \u00b7 Renters v. Rentiers - London Review of Books"
         ]
       },
       {
-        "ts": "2026-04-03T10:40:31.648296",
+        "ts": "2026-04-03T14:09:58.406592",
         "problem": "Multiple negative reports",
         "location": "London",
         "severity": "MEDIUM",
-        "sources_count": 28,
+        "sources_count": 20,
         "sentiment": {
           "negative": 3,
           "positive": 0
         },
         "status": "NEW",
         "sources": [
-          "International Student - When to Start Applying for Rentals",
-          "Will the London housing market keep dropping, or level off?",
-          "What is wrong with these houses (London)?",
-          "Shafted in Small Claims Court- Should I appeal?",
-          "Sell our flat or rent it out? (To go travelling)"
+          "What the price-to-rent ratio reveals about Britain\u2019s housing crisis - The London",
+          "London renters at crisis point as number of homes to rent falls - NRLA",
+          "Rental crisis in London worsens: \u2018Payments border on the obscene\u2019 - City AM",
+          "Rental crisis in London \u2018deepens further\u2019, landlords warn - thenegotiator.co.uk",
+          "Jack Shenker \u00b7 Renters v. Rentiers - London Review of Books"
         ]
       },
       {
-        "ts": "2026-04-03T10:55:43.801881",
+        "ts": "2026-04-03T14:25:12.671792",
         "problem": "Multiple negative reports",
         "location": "London",
         "severity": "MEDIUM",
@@ -657,9 +653,9 @@
     ],
     "sentiment": {
       "positive": 3,
-      "negative": 983,
-      "mixed": 44,
-      "neutral": 13607
+      "negative": 999,
+      "mixed": 46,
+      "neutral": 13547
     }
   }
 }

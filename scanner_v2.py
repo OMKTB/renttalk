@@ -310,6 +310,15 @@ def run_scan(scan_number):
     if len(data.get("alerts",[])) > 50: data["alerts"] = data.get("alerts",[])[-50:]
     data["last_scan"] = scan["ts"]
     save_data(data)
+    # Also backup survey data locally every scan
+    try:
+        import urllib.request as ur
+        survey_blob = 'https://jsonblob.com/api/jsonBlob/019d4f5d-86a5-796a-b672-0cd57bc79864'
+        req = ur.Request(survey_blob, headers={'Accept':'application/json'})
+        survey = ur.urlopen(req, context=ctx, timeout=10).read()
+        with open(os.path.join(HOME, 'backups', 'survey_latest.json'), 'wb') as bf:
+            bf.write(survey)
+    except: pass
 
     # 7. Push to cloud intel blob
     try:
