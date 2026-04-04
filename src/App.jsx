@@ -8,8 +8,6 @@ const ADMIN_PIN = "zubife6ezklm5nthmalu78gytklm3shan7nekomo";
 const DELETE_PIN = "zbekbermraaaaaaatbatshufut3alm9";
 const P = ["#2C2C2C","#6B6B6B","#999","#B5B5B5","#D4D4D4","#8B8B8B","#555","#777","#AAA","#CCC"];
 const FUNC = "/.netlify/functions/data";
-const BLOB = "https://jsonblob.com/api/jsonBlob/019d4f5d-86a5-796a-b672-0cd57bc79864";
-const PROXY = "https://corsproxy.io/?";
 const INTEL_FUNC = "/.netlify/functions/intel";
 
 const UK = {
@@ -60,12 +58,10 @@ const CATS = {"Rental affordability":"Financial","Poor conditions":"Physical","L
 /* ═ CLOUD ═ */
 async function cloudLoad(){
   try{const r=await fetch(FUNC);if(r.ok){const d=await r.json();return Array.isArray(d.responses)?d.responses:[];}}catch(e){}
-  try{const r=await fetch(PROXY+encodeURIComponent(BLOB),{headers:{"Accept":"application/json"}});if(r.ok){const d=await r.json();return Array.isArray(d.responses)?d.responses:[];}}catch(e){}
   return [];
 }
 async function cloudAppend(e){
   try{const r=await fetch(FUNC,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(e)});if(r.ok)return true;}catch(e){}
-  try{const g=await fetch(PROXY+encodeURIComponent(BLOB),{headers:{"Accept":"application/json"}});const d=await g.json();const rs=Array.isArray(d.responses)?d.responses:[];rs.push({...e,ts:Date.now()});const p=await fetch(PROXY+encodeURIComponent(BLOB),{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({responses:rs})});if(p.ok)return true;}catch(e){}
   return false;
 }
 async function cloudClear(){try{await fetch(FUNC,{method:"DELETE"});}catch(e){}}
