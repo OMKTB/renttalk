@@ -14,7 +14,7 @@ from datetime import datetime
 HOME = os.path.expanduser("~/renttalk")
 LOG = os.path.join(HOME, "ig_scan_findings.json")
 SCAN_LOG = os.path.join(HOME, "scanner_v2.log")
-INTEL_BLOB = "https://jsonblob.com/api/jsonBlob/019d541a-e20c-7466-a13e-fb07fad3ec27"
+INTEL_URL = "https://renttalk-uk.netlify.app/.netlify/functions/intel"
 
 ctx = ssl.create_default_context()
 ctx.check_hostname = False
@@ -313,28 +313,25 @@ def run_scan(scan_number):
     # Also backup survey data locally every scan
     try:
         import urllib.request as ur
-        survey_blob = 'https://jsonblob.com/api/jsonBlob/019d4f5d-86a5-796a-b672-0cd57bc79864'
-        req = ur.Request(survey_blob, headers={'Accept':'application/json'})
+        survey_url = 'https://renttalk-uk.netlify.app/.netlify/functions/data'
+        req = ur.Request(survey_url, headers={'Accept':'application/json'})
         survey = ur.urlopen(req, context=ctx, timeout=10).read()
         with open(os.path.join(HOME, 'backups', 'survey_latest.json'), 'wb') as bf:
             bf.write(survey)
     except: pass
 
-    # 7. Push to cloud intel blob
+    # 7. Push to Netlify Blobs via intel function
     try:
-        req = urllib.request.Request(INTEL_BLOB, headers={"Accept":"application/json"})
-        existing = json.loads(urllib.request.urlopen(req, context=ctx).read())
-        # Preserve intel_package if it exists
-        pkg = existing.get("intel_package")
-        existing["social_scans"] = data["scans"][-5:]
-        existing["alerts"] = data["alerts"][-10:]
-        existing["agencies"] = data.get("agencies",[])[-20:]
-        existing["last_social_scan"] = scan["ts"]
-        if pkg: existing["intel_package"] = pkg
-        put_req = urllib.request.Request(INTEL_BLOB, json.dumps(existing).encode(), method="PUT",
-            headers={"Content-Type":"application/json","Accept":"application/json"})
-        urllib.request.urlopen(put_req, context=ctx)
-        log("  Pushed to cloud")
+        push_data = {
+            "social_scans": data["scans"][-5:],
+            "alerts": data["alerts"][-10:],
+            "agencies": data.get("agencies",[])[-20:],
+            "last_social_scan": scan["ts"]
+        }
+        push_req = urllib.request.Request(INTEL_URL, json.dumps(push_data).encode(),
+            method="POST", headers={"Content-Type":"application/json"})
+        urllib.request.urlopen(push_req, context=ctx, timeout=15)
+        log("  Pushed to Netlify Blobs")
     except Exception as e:
         log(f"  Cloud push failed: {e}")
 

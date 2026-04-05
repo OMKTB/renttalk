@@ -8,12 +8,12 @@ ctx.check_hostname = False
 ctx.verify_mode = ssl.CERT_NONE
 
 HOME = "/Users/omaralrashed/renttalk"
-SURVEY_BLOB = "https://jsonblob.com/api/jsonBlob/019d4f5d-86a5-796a-b672-0cd57bc79864"
-INTEL_BLOB = "https://jsonblob.com/api/jsonBlob/019d541a-e20c-7466-a13e-fb07fad3ec27"
+SURVEY_URL = "https://renttalk-uk.netlify.app/.netlify/functions/data"
+INTEL_URL = "https://renttalk-uk.netlify.app/.netlify/functions/intel"
 
 # Load data
 with open(f'{HOME}/ig_scan_findings.json') as f: scanner = json.load(f)
-survey = json.loads(urllib.request.urlopen(urllib.request.Request(SURVEY_BLOB, headers={'Accept':'application/json'}), context=ctx).read())
+survey = json.loads(urllib.request.urlopen(urllib.request.Request(SURVEY_URL), context=ctx, timeout=15).read())
 responses = survey.get('responses', [])
 n = len(responses)
 
@@ -129,10 +129,10 @@ package = {
 with open(f'{HOME}/intel_package.json','w') as f: json.dump(package,f,indent=2)
 
 # Push to cloud
-existing = json.loads(urllib.request.urlopen(urllib.request.Request(INTEL_BLOB,headers={'Accept':'application/json'}),context=ctx).read())
-existing['intel_package'] = package
-req = urllib.request.Request(INTEL_BLOB, json.dumps(existing).encode(), method='PUT', headers={'Content-Type':'application/json','Accept':'application/json'})
-urllib.request.urlopen(req, context=ctx)
+# Push intel_package via POST to Netlify Blobs
+post_data = json.dumps({'intel_package': package}).encode()
+req = urllib.request.Request(INTEL_URL, post_data, method='POST', headers={'Content-Type':'application/json'})
+urllib.request.urlopen(req, context=ctx, timeout=15)
 
 print("=== INTEL PACKAGE BUILT & PUSHED ===")
 print(f"Cross-refs: {len(cross_ref)} locations")
